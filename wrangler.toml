@@ -16,6 +16,9 @@ GOOGLE_CLIENT_ID = { secret = "GOOGLE_CLIENT_ID" }
 [[vars]]
 GOOGLE_CLIENT_SECRET = { secret = "GOOGLE_CLIENT_SECRET" }
 
+[[vars]]
+R2_PUBLIC_URL = { secret = "R2_PUBLIC_URL" }
+
 # Optional: Enable Logpush for observability
 # [[logs]]
 # destination = "logtail-destination"
@@ -26,3 +29,8 @@ GOOGLE_CLIENT_SECRET = { secret = "GOOGLE_CLIENT_SECRET" }
 
 [env.production]
 # Production environment config
+
+[observability]
+[observability.logs]
+enabled = false
+invocation_logs = true
