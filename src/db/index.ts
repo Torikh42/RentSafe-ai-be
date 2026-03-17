@@ -7,7 +7,7 @@ import type { Env } from "../env";
  * Creates a fresh database instance for each request.
  * IMPORTANT: Do NOT cache database instances globally in Cloudflare Workers.
  * Database connections created in one request context cannot be
-* accessed from another request's handler due to Cloudflare's isolation model.
+ * accessed from another request's handler due to Cloudflare's isolation model.
  *
  * Uses Cloudflare Hyperdrive for connection pooling in production,
  * falling back to direct Neon connection for local development.

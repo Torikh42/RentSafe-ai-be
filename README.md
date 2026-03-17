@@ -12,6 +12,7 @@ Hono + Drizzle ORM + PostgreSQL backend for RentSafe-ai.
 ## Getting Started
 
 ### Prerequisites
+
 - [Bun](https://bun.sh/) installed
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed
 
@@ -58,7 +59,7 @@ bun db:studio     # Open Drizzle Studio
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|---|---|---|
-| `DATABASE_URL` | PostgreSQL connection string | - |
-| `PORT` | Server port | `8000` |
+| Variable       | Description                  | Default |
+| -------------- | ---------------------------- | ------- |
+| `DATABASE_URL` | PostgreSQL connection string | -       |
+| `PORT`         | Server port                  | `8000`  |

@@ -28,10 +28,10 @@ This document is the authoritative guide for maintaining code quality, architect
 
   ```typescript
   // ✅ GOOD
-  const ROLES = ['admin', 'user'] as const;
+  const ROLES = ["admin", "user"] as const;
 
   // ❌ BAD
-  const ROLES: string[] = ['admin', 'user'];
+  const ROLES: string[] = ["admin", "user"];
   ```
 
 ### 2.2. No `any` or `{}`
@@ -76,6 +76,7 @@ This document is the authoritative guide for maintaining code quality, architect
 ### 4.1. Environment Variables
 
 - **Standard:** NEVER use `process.env`. Always use `c.env` in handlers.
+
   ```typescript
   // ✅ GOOD
   const auth = getAuth(c.env);
@@ -106,12 +107,13 @@ This document is the authoritative guide for maintaining code quality, architect
 ### 5.2. ISO Dates
 
 - **Standard:** Use `z.string().datetime()` — never `z.date()` in OpenAPI schemas.
+
   ```typescript
   // ✅ GOOD
-  schema: z.object({ createdAt: z.string().datetime() })
+  schema: z.object({ createdAt: z.string().datetime() });
 
   // ❌ BAD
-  schema: z.object({ createdAt: z.date() }) // Breaks OpenAPI generation!
+  schema: z.object({ createdAt: z.date() }); // Breaks OpenAPI generation!
   ```
 
 ---
@@ -121,6 +123,7 @@ This document is the authoritative guide for maintaining code quality, architect
 ### 6.1. Parallelism Over Serialization
 
 - **Standard:** Use `Promise.all` for independent async tasks.
+
   ```typescript
   // ✅ GOOD
   const [user, session] = await Promise.all([getUser(), getSession()]);
@@ -137,6 +140,7 @@ This document is the authoritative guide for maintaining code quality, architect
 ### 7.1. Explicit Error Responses
 
 - **Standard:** Return consistent JSON error responses. Use typed status codes.
+
   ```typescript
   // ✅ GOOD
   return c.json({ message: "Unauthorized" }, 401);
@@ -149,16 +153,16 @@ This document is the authoritative guide for maintaining code quality, architect
 
 ## 8. Summary Checklist for AI Reviewer
 
-| Category | Must Have | Immediate Rejection |
-| :--- | :--- | :--- |
-| **Hono** | `createRouter()` from factory | `new Hono()` / `new OpenAPIHono()` |
-| **OpenAPI** | `createRoute` + `openapi()` on every route | Bare `router.get()` without docs |
-| **CF Workers** | `c.env` for all env access | `process.env` anywhere |
-| **Types** | `z.string().datetime()` for timestamps | `z.date()` in schemas |
-| **Types** | No `any` or unsafe casts | `as any`, `: any`, `{}` |
-| **DB** | `!result` check after Drizzle destructure | Unchecked destructured queries |
-| **Logic** | Services taking primitives | Services taking `Context` |
-| **Size** | Handlers < 50 lines | Mega-handlers |
+| Category       | Must Have                                  | Immediate Rejection                |
+| :------------- | :----------------------------------------- | :--------------------------------- |
+| **Hono**       | `createRouter()` from factory              | `new Hono()` / `new OpenAPIHono()` |
+| **OpenAPI**    | `createRoute` + `openapi()` on every route | Bare `router.get()` without docs   |
+| **CF Workers** | `c.env` for all env access                 | `process.env` anywhere             |
+| **Types**      | `z.string().datetime()` for timestamps     | `z.date()` in schemas              |
+| **Types**      | No `any` or unsafe casts                   | `as any`, `: any`, `{}`            |
+| **DB**         | `!result` check after Drizzle destructure  | Unchecked destructured queries     |
+| **Logic**      | Services taking primitives                 | Services taking `Context`          |
+| **Size**       | Handlers < 50 lines                        | Mega-handlers                      |
 
 ---
 
