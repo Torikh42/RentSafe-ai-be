@@ -25,7 +25,7 @@ export function createAuth(env: Env) {
         user: schema.users,
         session: schema.sessions,
         account: schema.accounts,
-        verification: schema.verificationTokens,
+        verification: schema.verification,
       },
     }),
 

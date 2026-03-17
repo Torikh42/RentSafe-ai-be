@@ -1,42 +1,41 @@
 import {
   pgTable,
   text,
-  serial,
   integer,
   boolean,
   timestamp,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
   password: text("password"), // nullable for OAuth users
-  name: text("name").notNull(),
+  name: text("name"),
   role: text("role", { enum: ["tenant", "landlord", "admin"] })
     .default("tenant")
     .notNull(),
   emailVerified: timestamp("email_verified"),
   image: text("image"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const properties = pgTable("properties", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   name: text("name").notNull(),
   address: text("address").notNull(),
   price: integer("price").notNull(),
   description: text("description"),
   available: boolean("available").default(true).notNull(),
-  landlordId: integer("landlord_id").references(() => users.id),
+  landlordId: text("landlord_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const bookings = pgTable("bookings", {
-  id: serial("id").primaryKey(),
-  propertyId: integer("property_id").references(() => properties.id),
-  userId: integer("user_id").references(() => users.id),
+  id: text("id").primaryKey(),
+  propertyId: text("property_id").references(() => properties.id),
+  userId: text("user_id").references(() => users.id),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
   status: text("status", {
@@ -52,8 +51,8 @@ export const bookings = pgTable("bookings", {
 export const accounts = pgTable(
   "accounts",
   {
-    id: serial("id").primaryKey(),
-    userId: integer("user_id")
+    id: text("id").primaryKey(),
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     accountId: text("account_id").notNull(),
@@ -78,8 +77,8 @@ export const accounts = pgTable(
 export const sessions = pgTable(
   "sessions",
   {
-    id: serial("id").primaryKey(),
-    userId: integer("user_id")
+    id: text("id").primaryKey(),
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     expiresAt: timestamp("expires_at").notNull(),
@@ -94,15 +93,17 @@ export const sessions = pgTable(
   }),
 );
 
-export const verificationTokens = pgTable(
-  "verification_tokens",
+export const verification = pgTable(
+  "verification",
   {
+    id: text("id").primaryKey(),
     identifier: text("identifier").notNull(),
-    token: text("token").notNull(),
+    value: text("value").notNull(),
     expiresAt: timestamp("expires_at").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => ({
-    pk: { columns: [table.identifier, table.token] },
+    pk: { columns: [table.identifier, table.value] },
   }),
 );
