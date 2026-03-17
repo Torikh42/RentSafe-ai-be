@@ -19,6 +19,12 @@ GOOGLE_CLIENT_SECRET = { secret = "GOOGLE_CLIENT_SECRET" }
 [[vars]]
 R2_PUBLIC_URL = { secret = "R2_PUBLIC_URL" }
 
+[[vars]]
+BETTER_AUTH_URL = { secret = "BETTER_AUTH_URL" }
+
+[[vars]]
+FRONTEND_URLS = { secret = "FRONTEND_URLS" }
+
 # Optional: Enable Logpush for observability
 # [[logs]]
 # destination = "logtail-destination"
