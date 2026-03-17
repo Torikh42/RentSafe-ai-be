@@ -1,6 +1,6 @@
 # Code Quality & Style Guide (AI Reviewer Reference)
 
-This document is the authoritative guide for maintaining code quality, architectural integrity, and stylistic consistency in the **api-pwn** project (Cloudflare Workers + Hono + @hono/zod-openapi).
+This document is the authoritative guide for maintaining code quality, architectural integrity, and stylistic consistency in the **rentsafe-ai** project (Cloudflare Workers + Hono + @hono/zod-openapi).
 
 ---
 

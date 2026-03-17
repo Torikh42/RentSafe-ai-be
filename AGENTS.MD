@@ -4,8 +4,8 @@
 
 ## 1. Project Overview
 
-**Project:** api-pwn — PWN Gamification Platform Backend
-**Goal:** Backend API untuk platform gamifikasi PWN. Mengelola autentikasi pengguna (Google OAuth), quiz personality, promo claims, dan fitur gamifikasi lainnya.
+**Project:** api-Rentsafe-ai — Rentsafe-ai Platform Backend
+**Goal:** Backend API untuk platform Rentsafe-ai. Mengelola autentikasi pengguna (Google OAuth), dan fitur lainnya.
 
 ## 2. Tech Stack (Strict)
 

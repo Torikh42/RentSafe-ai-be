@@ -1,0 +1,25 @@
+name = "rentsafe-ai-be"
+main = "src/index.ts"
+compatibility_date = "2025-03-17"
+compatibility_flags = ["nodejs_compat"]
+
+# Production secrets (set via: wrangler secret put <NAME>)
+[[vars]]
+DATABASE_URL = { secret = "DATABASE_URL" }
+
+[[vars]]
+BETTER_AUTH_SECRET = { secret = "BETTER_AUTH_SECRET" }
+
+[[vars]]
+GOOGLE_CLIENT_ID = { secret = "GOOGLE_CLIENT_ID" }
+
+[[vars]]
+GOOGLE_CLIENT_SECRET = { secret = "GOOGLE_CLIENT_SECRET" }
+
+# Optional: Enable Logpush for observability
+# [[logs]]
+# destination = "logtail-destination"
+
+# Dev environment uses .dev.vars automatically
+[env.development]
+# Development-specific overrides if needed
