@@ -112,6 +112,12 @@ app.get(
 // Auth — semua /api/auth/* didelegasikan ke Better Auth
 app.route("/api/auth", authRouter);
 
+app.get("/", (c) => c.text("RentSafe-ai API is running."));
+
+app.notFound((c) => {
+  return c.json({ error: "Not Found" }, 404);
+});
+
 app.onError((err, c) => {
   console.error("Global Hono Error:", err);
   return c.json(
