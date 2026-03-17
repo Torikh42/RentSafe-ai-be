@@ -1,4 +1,4 @@
-name = "rentsafe-ai-be"
+name = "rentsafe-ai-be-production"
 main = "src/index.ts"
 compatibility_date = "2025-03-17"
 compatibility_flags = ["nodejs_compat"]
