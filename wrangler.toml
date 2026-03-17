@@ -23,3 +23,6 @@ GOOGLE_CLIENT_SECRET = { secret = "GOOGLE_CLIENT_SECRET" }
 # Dev environment uses .dev.vars automatically
 [env.development]
 # Development-specific overrides if needed
+
+[env.production]
+# Production environment config
