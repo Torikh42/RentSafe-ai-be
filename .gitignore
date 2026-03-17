@@ -42,3 +42,5 @@ drizzle/meta/
 
 # Misc
 .vercel
+
+openapi.json
