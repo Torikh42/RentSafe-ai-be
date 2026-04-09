@@ -114,6 +114,76 @@ app.route("/api/auth", authRouter);
 
 app.get("/", (c) => c.text("RentSafe-ai API is running."));
 
+// Temporary Testing UI for Google Login
+app.get("/test-login", (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Test OAuth Login</title>
+        <style>
+          body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; }
+          .card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+          h1 { margin-bottom: 20px; font-size: 24px; }
+          button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #4285F4; color: white; border: none; border-radius: 5px; }
+          button:hover { background: #3367D6; }
+          pre { margin-top: 20px; text-align: left; background: #f5f5f5; padding: 15px; border-radius: 5px; font-size: 12px; max-height: 300px; overflow: auto; }
+          .status { margin-top: 10px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h1>Test OAuth Login</h1>
+          <button onclick="login()">Login with Google</button>
+          <div class="status" id="status"></div>
+          <pre id="result"></pre>
+        </div>
+        <script>
+          async function login() {
+            const statusEl = document.getElementById("status");
+            const resultEl = document.getElementById("result");
+            statusEl.textContent = "Redirecting to Google...";
+            resultEl.textContent = "";
+            try {
+              const res = await fetch("/api/auth/sign-in/social", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ provider: "google", callbackURL: "${c.env.BETTER_AUTH_URL}/test-login" })
+              });
+              const data = await res.json();
+              if (data.url) {
+                window.location.href = data.url;
+              } else {
+                statusEl.textContent = "Error";
+                resultEl.textContent = JSON.stringify(data, null, 2);
+              }
+            } catch (e) {
+              statusEl.textContent = "Error";
+              resultEl.textContent = e.message;
+            }
+          }
+
+          // Check if returning from OAuth callback
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.has("code") || urlParams.has("error")) {
+            document.getElementById("status").textContent = "Callback received. Checking session...";
+            fetch("/api/auth/get-session")
+              .then(r => r.json())
+              .then(data => {
+                document.getElementById("status").textContent = data?.user ? "Logged in!" : "Not logged in";
+                document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+              })
+              .catch(e => {
+                document.getElementById("status").textContent = "Session check failed";
+                document.getElementById("result").textContent = e.message;
+              });
+          }
+        </script>
+      </body>
+    </html>
+  `);
+});
+
 app.notFound((c) => {
   return c.json({ error: "Not Found" }, 404);
 });

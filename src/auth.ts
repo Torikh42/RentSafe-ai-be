@@ -23,8 +23,8 @@ export function createAuth(env: Env) {
       provider: "pg", // Use 'postgresql' for Neon/Postgres
       schema: {
         user: schema.users,
-        session: schema.sessions,
-        account: schema.accounts,
+        session: schema.session,
+        account: schema.account,
         verification: schema.verification,
       },
     }),
