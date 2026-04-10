@@ -4,24 +4,48 @@
 
 ## 1. Project Overview
 
-**Project:** api-Rentsafe-ai — Rentsafe-ai Platform Backend
-**Goal:** Backend API untuk platform Rentsafe-ai. Mengelola autentikasi pengguna (Google OAuth), dan fitur lainnya.
+**Project:** RentSafe AI — Backend API
+**Goal:** Platform AI-powered untuk menyelesaikan sengketa sewa kos-kosan & apartemen di Indonesia. Mengatasi "justice gap" di mana biaya hukum (IDR 5-15 juta) > nilai deposit (IDR 1-3 juta).
+
+**Core Features:**
+1. **AI Smart Contracts** — Generate kontrak sewa KUHPerdata-compliant dengan Gemini AI
+2. **AI Property Inspection** — Gemini Vision API untuk dokumentasi kondisi properti (check-in/check-out)
+3. **Smart Escrow** — Deposit dipegang Midtrans, dirilis otomatis berdasarkan AI verdict
+4. **Automated Dispute Resolution** — AI sebagai arbiter netral (multi-round mediation)
+5. **Two-way Reputation System** — Rating untuk tenant & landlord
+
+**Target Users:**
+- **Tenants:** Mahasiswa & young professionals (9.3 juta mahasiswa di Indonesia)
+- **Landlords:** Pemilik kos-kosan & apartemen
+- **Admin:** Platform moderator
+
+**Dokumen Referensi:**
+- `Geost_RentSafeAI.md` — Dokumen lengkap (background, solution, architecture, business model)
+- `IMPLEMENTATION_PLAN.md` — Phase-by-phase implementation plan
+- `QWEN.MD` — Detailed AI assistant guide (lebih lengkap dengan service guidelines)
+
+---
 
 ## 2. Tech Stack (Strict)
 
-| Layer | Tech |
-|---|---|
-| Runtime | **Cloudflare Workers** (via Wrangler) |
-| Framework | [Hono](https://hono.dev) v4+ |
-| OpenAPI | `@hono/zod-openapi` (`createRoute` + Zod schemas) |
-| Auth | [Better Auth](https://www.better-auth.com) (Google OAuth) |
-| Database | PostgreSQL |
-| ORM | [Drizzle ORM](https://orm.drizzle.team) |
-| Validation | Zod |
-| Language | TypeScript (strict) |
-| Linting | Oxlint & Oxfmt |
+| Layer | Tech | Keterangan |
+|---|---|---|
+| Runtime | **Cloudflare Workers** (via Wrangler) | Bukan Node.js/Bun |
+| Framework | [Hono](https://hono.dev) v4+ | Lightweight web framework |
+| OpenAPI | `@hono/zod-openapi` (`createRoute` + Zod schemas) | Route documentation |
+| Auth | [Better Auth](https://www.better-auth.com) (Google OAuth) | Bukan Supabase |
+| Database | PostgreSQL (Neon Serverless) | |
+| Connection Pooling | **Cloudflare Hyperdrive** | Binding: `env.HYPERDRIVE` |
+| ORM | [Drizzle ORM](https://orm.drizzle.team) | Type-safe query |
+| Storage | **Cloudflare R2** | S3-compatible (foto inspection, contracts) |
+| AI | **Google Gemini** / OpenRouter | Vision API + text generation |
+| Payment | **Midtrans** | Escrow & subscription |
+| Validation | Zod | Request/response validation |
+| Language | TypeScript (strict) | No `any`, no `process.env` |
+| Linting | Oxlint & Oxfmt | Fast lint & format |
 
 > ⚠️ **Cloudflare Workers** bukan Node.js/Bun. Environment variables diakses via `c.env`, **bukan** `process.env`.
+> ⚠️ **JANGAN** cache database connections sebagai singleton — isolate freeze akan memutus TCP → hang → 500 error.
 
 ---
 
@@ -29,9 +53,31 @@
 
 Struktur **Modular Monolith** dengan pemisahan layer yang jelas:
 
-- **Modules:** Vertical slices per domain (e.g., `auth`, `quiz`, `promo`)
-- **Services:** Pure business logic. **JANGAN** pass Hono Context (`c`) ke Service
-- **Factory:** Single source of truth untuk pembuatan Hono app
+- **Modules:** Vertical slices per domain (e.g., `auth`, `properties`, `contracts`, `inspections`, `disputes`)
+- **Services:** Pure business logic untuk cross-module concerns (AI, R2, Midtrans, notifications). **JANGAN** pass Hono Context (`c`) ke Service
+- **Factory:** Single source of truth untuk pembuatan Hono app (`src/factory.ts`)
+- **Database:** Semua schema di `src/db/schema.ts`. Instance dibuat fresh per request via `getDb(env)`
+
+### Database Schema (High-Level)
+
+**Tables yang sudah ada:**
+- `users` — User dengan role (tenant/landlord/admin)
+- `properties` — Data properti/kos
+- `bookings` — Booking requests
+- `session`, `account`, `verification` — Better Auth tables
+
+**Tables yang akan ditambahkan (sesuai IMPLEMENTATION_PLAN.md):**
+- `contracts` — Smart contracts (AI-generated, fairness scoring)
+- `inspections` — Property inspection reports (check-in/check-out)
+- `inspection_items` — Individual photo analysis dengan Gemini Vision
+- `escrows` — Deposit escrow (hold, release, refund)
+- `payments` — Payment transactions (Midtrans)
+- `subscriptions` — Landlord premium (Free/Pro)
+- `disputes` — Dispute cases dengan AI verdict
+- `dispute_messages` — Mediation conversations
+- `dispute_evidence` — Evidence files
+- `reviews` — Two-way reputation rating
+- `notifications` — Email/push notifications
 
 ---
 
@@ -148,9 +194,26 @@ schema: z.object({ createdAt: z.date() }) // Crash saat generate OpenAPI!
 
 ### Rule 7: The Import Direction Rule
 
-- `modules/` → imports → `db/schema/`, `auth.ts`, `env.ts`
+- `modules/` → imports → `db/schema/`, `auth.ts`, `env.ts`, `services/`
 - `services/` → imports → `db/schema/`
 - ❌ `modules/A` → imports → `modules/B` (Gunakan shared service)
+
+### Rule 8: The Database Connection Rule
+
+**JANGAN** cache database connections sebagai singleton. Cloudflare Workers isolate freeze akan memutus TCP connections.
+
+```typescript
+// ✅ GOOD — Fresh client per request
+export const getDb = (env: Env) => {
+  const connectionString = env.HYPERDRIVE?.connectionString || env.DATABASE_URL;
+  const client = new pg.Client({ connectionString });
+  client.connect();
+  return drizzle(client, { schema });
+};
+
+// ❌ BAD — Singleton pool akan hang setelah isolate freeze
+const pool = new pg.Pool({ connectionString }); // JANGAN INI!
+```
 
 ---
 
@@ -161,11 +224,11 @@ src/
 ├── index.ts               # Entry point (export default app)
 ├── app.ts                 # Main app: mount middleware + semua module
 ├── auth.ts                # Better Auth config & cache
-├── env.ts                 # Zod env schema & Env type
+├── env.ts                 # Zod env schema & Env type (include HYPERDRIVE)
 ├── factory.ts             # createRouter(), AppEnv, AppContext
 │
 ├── db/
-│   ├── index.ts           # getDb() dengan instance caching
+│   ├── index.ts           # getDb(env) — fresh client per request
 │   └── schema.ts          # Drizzle schema (Better Auth + domain tables)
 │
 ├── middlewares/
@@ -182,8 +245,11 @@ src/
 │       ├── [name].schema.ts    # Zod schemas (request/response)
 │       └── index.ts            # createRouter() + mount routes
 │
-├── services/              # Cross-module business logic (opsional)
-│   └── [name].service.ts
+├── services/              # Cross-module business logic
+│   ├── ai.service.ts      # Gemini/OpenRouter wrapper
+│   ├── r2.service.ts      # Cloudflare R2 (upload, delete, URL)
+│   ├── midtrans.service.ts # Payment & Escrow
+│   └── notification.service.ts # Email/push notifications
 │
 └── scripts/
     └── generate-openapi.ts # bun openapi:generate
@@ -195,7 +261,7 @@ src/
 
 ### Phase 1: Data
 1. Update `src/db/schema.ts` dengan tabel baru
-2. `bun run push` untuk sync ke DB
+2. `bun db:push` untuk sync ke DB
 
 ### Phase 2: Contract
 3. Buat `src/modules/[domain]/[name].schema.ts` dengan Zod schemas
@@ -208,6 +274,10 @@ src/
 
 ### Phase 4: Docs
 8. `bun run openapi:generate` untuk update `openapi.json`
+
+### Phase 5: Verify
+9. `bun run fl` — Format & lint
+10. `bun run check` — TypeScript type check
 
 ---
 
@@ -226,7 +296,10 @@ bun run check  # TypeScript type check
 - ✅ Semua route pakai `createRoute` + `router.openapi()`
 - ✅ Tidak ada `z.date()` di OpenAPI schema (gunakan `z.string().datetime()`)
 - ✅ Services tidak menerima Hono Context
-- ✅ Tidak ada cross-module imports
+- ✅ Tidak ada cross-module imports (`modules/A` → `modules/B`)
+- ✅ Database connections tidak di-cache sebagai singleton
+- ✅ TypeScript strict mode (no `any`, proper type narrowing)
+- ✅ Tidak ada unused imports atau variables
 
 ---
 
@@ -239,11 +312,80 @@ Route `/test/*` di `src/modules/dev/` **HANYA** untuk development. Sebelum produ
 
 ---
 
-## 9. Endpoints Reference
+## 9. Current Endpoints Reference
 
-| Method | Endpoint | Keterangan |
-|---|---|---|
-| `GET/POST` | `/api/auth/*` | Better Auth (sign-in, callback, get-session, sign-out) |
-| `GET` | `/api/me` | Info user yang sedang login |
-| `GET` | `/doc` | OpenAPI JSON spec |
-| `GET` | `/reference` | Scalar UI (API docs) |
+| Method | Endpoint | Access | Status |
+|---|---|---|---|
+| `GET/POST` | `/api/auth/*` | Public | ✅ Better Auth (Google OAuth) |
+| `GET` | `/api/me` | Authenticated | ⏳ TODO |
+| `GET` | `/api/properties` | Public | ⏳ TODO |
+| `GET` | `/api/properties/:id` | Public | ⏳ TODO |
+| `POST` | `/api/properties` | Landlord | ⏳ TODO |
+| `PATCH` | `/api/properties/:id` | Owner | ⏳ TODO |
+| `DELETE` | `/api/properties/:id` | Owner | ⏳ TODO |
+| `GET` | `/doc` | Public | ✅ OpenAPI JSON spec |
+| `GET` | `/reference` | Public | ✅ Scalar UI (API docs) |
+
+**Full endpoint list (50+ endpoints):** See `IMPLEMENTATION_PLAN.md` — Section "API Endpoints Summary"
+
+---
+
+## 10. Implementation Status
+
+| Phase | Duration | Status | Fitur Utama |
+|---|---|---|---|
+| **Phase 1: Foundation** | Week 1-2 | 🔄 In Progress | Auth ✅, Properties ⏳, R2 Storage ⏳ |
+| **Phase 2: Rental Lifecycle** | Week 3-4 | ⏳ Pending | Contracts, Bookings, AI Contract Gen |
+| **Phase 3: AI Inspection** | Week 5-6 | ⏳ Pending | Gemini Vision, Damage Detection |
+| **Phase 4: Escrow & Payments** | Week 7-8 | ⏳ Pending | Midtrans, Escrow, Subscriptions |
+| **Phase 5: Dispute Resolution** | Week 9-10 | ⏳ Pending | AI Arbitration, Verdict System |
+| **Phase 6: Dashboard & Polish** | Week 11-12 | ⏳ Pending | Dashboards, Reputation, Notifications |
+
+**Detail lengkap:** `IMPLEMENTATION_PLAN.md`
+
+---
+
+## 11. Environment Variables
+
+```env
+# Database
+DATABASE_URL=postgres://...
+HYPERDRIVE_ID=84d544be300d480689904aeafba505f5
+
+# Auth
+BETTER_AUTH_SECRET=...
+BETTER_AUTH_URL=https://...
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+
+# Frontend
+FRONTEND_URLS=https://app.rentsafe.ai
+
+# AI
+GEMINI_API_KEY=...
+# ATAU
+OPENROUTER_API_KEY=...
+
+# Storage (R2)
+R2_ACCOUNT_ID=...
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_PUBLIC_URL=...
+R2_BUCKET_NAME=...
+
+# Payment (Midtrans)
+MIDTRANS_SERVER_KEY=...
+MIDTRANS_CLIENT_KEY=...
+MIDTRANS_ENVIRONMENT=sandbox
+
+# Notifications (Resend)
+RESEND_API_KEY=...
+
+# General
+NODE_ENV=production
+```
+
+---
+
+**Last Updated:** 10 April 2026
+**Maintained By:** Project team + AI assistants
