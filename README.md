@@ -13,12 +13,14 @@
 ## 🎯 Problem & Solution
 
 ### The Problem
+
 - **9.3 juta mahasiswa** di Indonesia, 50% tinggal di kos-kosan sewaan
 - **IDR 4.6 Triliun** deposit beredar tanpa perlindungan
 - **70-80% sengketa** terkait deposit yang tidak dikembalikan
 - **Justice Gap:** Biaya pengacara (5-15 juta) > nilai deposit (1-3 juta)
 
 ### The Solution
+
 1. **AI Smart Contracts** — Generate kontrak sewa KUHPerdata-compliant dalam 5 menit
 2. **AI Property Inspection** — Gemini Vision API untuk dokumentasi kondisi properti
 3. **Smart Escrow** — Deposit dipegang Midtrans, dirilis otomatis berdasarkan AI verdict
@@ -29,33 +31,33 @@
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| **Runtime** | Cloudflare Workers | Serverless edge computing |
-| **Framework** | [Hono](https://hono.dev) v4+ | Lightweight web framework |
-| **OpenAPI** | `@hono/zod-openapi` | Route documentation |
-| **Auth** | [Better Auth](https://www.better-auth.com) | Google OAuth |
-| **Database** | [Neon](https://neon.tech) PostgreSQL | Serverless Postgres |
-| **Connection Pooling** | [Cloudflare Hyperdrive](https://developers.cloudflare.com/hyperdrive/) | Edge connection pooling |
-| **ORM** | [Drizzle ORM](https://orm.drizzle.team) | Type-safe queries |
-| **Storage** | Cloudflare R2 | S3-compatible file storage |
-| **AI** | Google Gemini / OpenRouter | Vision API + text generation |
-| **Payment** | [Midtrans](https://midtrans.com) | Escrow & subscription |
-| **Validation** | [Zod](https://zod.dev) | Request/response validation |
-| **Language** | TypeScript (strict) | Type safety |
-| **Linting** | Oxlint & Oxfmt | Fast lint & format |
+| Layer                  | Technology                                                             | Purpose                      |
+| ---------------------- | ---------------------------------------------------------------------- | ---------------------------- |
+| **Runtime**            | Cloudflare Workers                                                     | Serverless edge computing    |
+| **Framework**          | [Hono](https://hono.dev) v4+                                           | Lightweight web framework    |
+| **OpenAPI**            | `@hono/zod-openapi`                                                    | Route documentation          |
+| **Auth**               | [Better Auth](https://www.better-auth.com)                             | Google OAuth                 |
+| **Database**           | [Neon](https://neon.tech) PostgreSQL                                   | Serverless Postgres          |
+| **Connection Pooling** | [Cloudflare Hyperdrive](https://developers.cloudflare.com/hyperdrive/) | Edge connection pooling      |
+| **ORM**                | [Drizzle ORM](https://orm.drizzle.team)                                | Type-safe queries            |
+| **Storage**            | Cloudflare R2                                                          | S3-compatible file storage   |
+| **AI**                 | Google Gemini / OpenRouter                                             | Vision API + text generation |
+| **Payment**            | [Midtrans](https://midtrans.com)                                       | Escrow & subscription        |
+| **Validation**         | [Zod](https://zod.dev)                                                 | Request/response validation  |
+| **Language**           | TypeScript (strict)                                                    | Type safety                  |
+| **Linting**            | Oxlint & Oxfmt                                                         | Fast lint & format           |
 
 ---
 
 ## 📚 Documentation
 
-| Document | Purpose |
-|---|---|
-| **[QWEN.MD](./QWEN.MD)** | 🤖 AI Assistant Guide (lengkap dengan service guidelines) |
-| **[CLAUDE.MD](./CLAUDE.MD)** | 🤖 AI Assistant Guide (ringkasan rules & workflow) |
-| **[AGENTS.MD](./AGENTS.MD)** | 📐 Architecture rules & Golden Rules (WAJIB dibaca) |
-| **[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)** | 🗺️ Phase-by-phase implementation plan (50+ endpoints) |
-| **[Geost_RentSafeAI.md](./Geost_RentSafeAI.md)** | 📄 Product specification (background, solution, business model) |
+| Document                                               | Purpose                                                         |
+| ------------------------------------------------------ | --------------------------------------------------------------- |
+| **[QWEN.MD](./QWEN.MD)**                               | 🤖 AI Assistant Guide (lengkap dengan service guidelines)       |
+| **[CLAUDE.MD](./CLAUDE.MD)**                           | 🤖 AI Assistant Guide (ringkasan rules & workflow)              |
+| **[AGENTS.MD](./AGENTS.MD)**                           | 📐 Architecture rules & Golden Rules (WAJIB dibaca)             |
+| **[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)** | 🗺️ Phase-by-phase implementation plan (50+ endpoints)           |
+| **[Geost_RentSafeAI.md](./Geost_RentSafeAI.md)**       | 📄 Product specification (background, solution, business model) |
 
 ---
 
@@ -187,39 +189,39 @@ bun run openapi:generate  # Generate OpenAPI spec
 
 ## 🌍 Environment Variables
 
-| Variable | Description | Required | Example |
-|---|---|---|---|
-| `DATABASE_URL` | PostgreSQL connection string | ✅ | `postgres://user:pass@host/db` |
-| `BETTER_AUTH_SECRET` | Secret key (min 32 chars) | ✅ | `your-secret-key-min-32-chars...` |
-| `BETTER_AUTH_URL` | Base URL for auth | ✅ | `https://api.rentsafe.ai` |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID | ✅ | `xxx.apps.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | ✅ | `GOCSPX-xxx` |
-| `FRONTEND_URLS` | Allowed frontend URLs | ✅ | `https://app.rentsafe.ai` |
-| `GEMINI_API_KEY` | Google AI Studio key | ⏳ | `AIzaSy...` |
-| `OPENROUTER_API_KEY` | Alternative AI provider | ⏳ | `sk-or-...` |
-| `R2_ACCOUNT_ID` | Cloudflare R2 account | ⏳ | `xxx` |
-| `R2_ACCESS_KEY_ID` | R2 access key | ⏳ | `xxx` |
-| `R2_SECRET_ACCESS_KEY` | R2 secret key | ⏳ | `xxx` |
-| `R2_PUBLIC_URL` | R2 public URL | ⏳ | `https://r2.pub...` |
-| `R2_BUCKET_NAME` | R2 bucket name | ⏳ | `rentsafe-assets` |
-| `MIDTRANS_SERVER_KEY` | Midtrans server key | ⏳ | `SB-Mid-server-xxx` |
-| `MIDTRANS_CLIENT_KEY` | Midtrans client key | ⏳ | `SB-Mid-client-xxx` |
-| `MIDTRANS_ENVIRONMENT` | Midtrans environment | ⏳ | `sandbox` or `production` |
-| `RESEND_API_KEY` | Resend email API key | ⏳ | `re_xxx` |
-| `NODE_ENV` | Environment | ❌ | `development` or `production` |
+| Variable               | Description                  | Required | Example                           |
+| ---------------------- | ---------------------------- | -------- | --------------------------------- |
+| `DATABASE_URL`         | PostgreSQL connection string | ✅       | `postgres://user:pass@host/db`    |
+| `BETTER_AUTH_SECRET`   | Secret key (min 32 chars)    | ✅       | `your-secret-key-min-32-chars...` |
+| `BETTER_AUTH_URL`      | Base URL for auth            | ✅       | `https://api.rentsafe.ai`         |
+| `GOOGLE_CLIENT_ID`     | Google OAuth client ID       | ✅       | `xxx.apps.googleusercontent.com`  |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret   | ✅       | `GOCSPX-xxx`                      |
+| `FRONTEND_URLS`        | Allowed frontend URLs        | ✅       | `https://app.rentsafe.ai`         |
+| `GEMINI_API_KEY`       | Google AI Studio key         | ⏳       | `AIzaSy...`                       |
+| `OPENROUTER_API_KEY`   | Alternative AI provider      | ⏳       | `sk-or-...`                       |
+| `R2_ACCOUNT_ID`        | Cloudflare R2 account        | ⏳       | `xxx`                             |
+| `R2_ACCESS_KEY_ID`     | R2 access key                | ⏳       | `xxx`                             |
+| `R2_SECRET_ACCESS_KEY` | R2 secret key                | ⏳       | `xxx`                             |
+| `R2_PUBLIC_URL`        | R2 public URL                | ⏳       | `https://r2.pub...`               |
+| `R2_BUCKET_NAME`       | R2 bucket name               | ⏳       | `rentsafe-assets`                 |
+| `MIDTRANS_SERVER_KEY`  | Midtrans server key          | ⏳       | `SB-Mid-server-xxx`               |
+| `MIDTRANS_CLIENT_KEY`  | Midtrans client key          | ⏳       | `SB-Mid-client-xxx`               |
+| `MIDTRANS_ENVIRONMENT` | Midtrans environment         | ⏳       | `sandbox` or `production`         |
+| `RESEND_API_KEY`       | Resend email API key         | ⏳       | `re_xxx`                          |
+| `NODE_ENV`             | Environment                  | ❌       | `development` or `production`     |
 
 ---
 
 ## 📊 Implementation Status
 
-| Phase | Status | Features |
-|---|---|---|
-| **Phase 1: Foundation** | 🔄 In Progress | Auth ✅, Properties ⏳, R2 ⏳ |
-| **Phase 2: Rental Lifecycle** | ⏳ Pending | Contracts, Bookings |
-| **Phase 3: AI Inspection** | ⏳ Pending | Gemini Vision, Damage Detection |
-| **Phase 4: Escrow & Payments** | ⏳ Pending | Midtrans, Escrow |
-| **Phase 5: Dispute Resolution** | ⏳ Pending | AI Arbitration |
-| **Phase 6: Dashboard & Polish** | ⏳ Pending | Analytics, Notifications |
+| Phase                           | Status         | Features                        |
+| ------------------------------- | -------------- | ------------------------------- |
+| **Phase 1: Foundation**         | 🔄 In Progress | Auth ✅, Properties ⏳, R2 ⏳   |
+| **Phase 2: Rental Lifecycle**   | ⏳ Pending     | Contracts, Bookings             |
+| **Phase 3: AI Inspection**      | ⏳ Pending     | Gemini Vision, Damage Detection |
+| **Phase 4: Escrow & Payments**  | ⏳ Pending     | Midtrans, Escrow                |
+| **Phase 5: Dispute Resolution** | ⏳ Pending     | AI Arbitration                  |
+| **Phase 6: Dashboard & Polish** | ⏳ Pending     | Analytics, Notifications        |
 
 **Detail lengkap:** [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)
 
@@ -244,19 +246,19 @@ wrangler deploy --dry-run  # Test deployment without deploying
 
 ## 📖 API Endpoints
 
-| Module | Endpoints | Status |
-|---|---|---|
-| **Auth** | `/api/auth/*` | ✅ Better Auth (Google OAuth) |
-| **Users** | `/api/me`, `/api/users/*` | ⏳ TODO |
-| **Properties** | `/api/properties` | ⏳ TODO |
-| **Bookings** | `/api/bookings` | ⏳ TODO |
-| **Contracts** | `/api/contracts` | ⏳ TODO |
-| **Inspections** | `/api/inspections` | ⏳ TODO |
-| **Escrows** | `/api/escrows` | ⏳ TODO |
-| **Payments** | `/api/payments` | ⏳ TODO |
-| **Disputes** | `/api/disputes` | ⏳ TODO |
-| **Subscriptions** | `/api/subscriptions` | ⏳ TODO |
-| **Dashboard** | `/api/dashboard/*` | ⏳ TODO |
+| Module            | Endpoints                 | Status                        |
+| ----------------- | ------------------------- | ----------------------------- |
+| **Auth**          | `/api/auth/*`             | ✅ Better Auth (Google OAuth) |
+| **Users**         | `/api/me`, `/api/users/*` | ⏳ TODO                       |
+| **Properties**    | `/api/properties`         | ⏳ TODO                       |
+| **Bookings**      | `/api/bookings`           | ⏳ TODO                       |
+| **Contracts**     | `/api/contracts`          | ⏳ TODO                       |
+| **Inspections**   | `/api/inspections`        | ⏳ TODO                       |
+| **Escrows**       | `/api/escrows`            | ⏳ TODO                       |
+| **Payments**      | `/api/payments`           | ⏳ TODO                       |
+| **Disputes**      | `/api/disputes`           | ⏳ TODO                       |
+| **Subscriptions** | `/api/subscriptions`      | ⏳ TODO                       |
+| **Dashboard**     | `/api/dashboard/*`        | ⏳ TODO                       |
 
 **Total:** ~50 endpoints planned. **Full list:** [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md#-api-endpoints-summary)
 

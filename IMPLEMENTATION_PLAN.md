@@ -8,33 +8,37 @@
 
 ## 📋 Daftar Fitur (Berdasarkan Dokumen)
 
-| # | Fitur | Status | Priority |
-|---|---|---|---|
-| 1 | **Authentication & Authorization** (Google OAuth, Role-based) | ✅ Sebagian ada | P0 |
-| 2 | **Property Management** (CRUD, AI Inspection) | ✅ Sebagian ada | P0 |
-| 3 | **Smart Contract Generation** (AI-powered) | ❌ Belum ada | P0 |
-| 4 | **Booking & Rental Lifecycle** | ✅ Sebagian ada | P0 |
-| 5 | **Escrow System** (Midtrans Integration) | ❌ Belum ada | P1 |
-| 6 | **AI Property Inspection** (Gemini Vision API) | ❌ Belum ada | P0 |
-| 7 | **Dispute Resolution** (AI Arbitration) | ❌ Belum ada | P1 |
-| 8 | **File Storage** (R2 for photos, contracts) | ❌ Belum ada | P0 |
-| 9 | **User Dashboard & Analytics** | ❌ Belum ada | P2 |
-| 10 | **Notifications & Reminders** | ❌ Belum ada | P2 |
-| 11 | **Reputation System** (Two-way rating) | ❌ Belum ada | P2 |
+| #   | Fitur                                                         | Status          | Priority |
+| --- | ------------------------------------------------------------- | --------------- | -------- |
+| 1   | **Authentication & Authorization** (Google OAuth, Role-based) | ✅ Sebagian ada | P0       |
+| 2   | **Property Management** (CRUD, AI Inspection)                 | ✅ Sebagian ada | P0       |
+| 3   | **Smart Contract Generation** (AI-powered)                    | ❌ Belum ada    | P0       |
+| 4   | **Booking & Rental Lifecycle**                                | ✅ Sebagian ada | P0       |
+| 5   | **Escrow System** (Midtrans Integration)                      | ❌ Belum ada    | P1       |
+| 6   | **AI Property Inspection** (Gemini Vision API)                | ❌ Belum ada    | P0       |
+| 7   | **Dispute Resolution** (AI Arbitration)                       | ❌ Belum ada    | P1       |
+| 8   | **File Storage** (R2 for photos, contracts)                   | ❌ Belum ada    | P0       |
+| 9   | **User Dashboard & Analytics**                                | ❌ Belum ada    | P2       |
+| 10  | **Notifications & Reminders**                                 | ❌ Belum ada    | P2       |
+| 11  | **Reputation System** (Two-way rating)                        | ❌ Belum ada    | P2       |
 
 ---
 
 ## 🗺️ Phase-by-Phase Implementation
 
 ### **PHASE 1: Foundation & Core (Week 1-2)**
+
 **Goal:** Authentication, User Management, Property CRUD, File Storage
 
 #### **1.1 Authentication & Authorization** ✅ Setup Dasar
+
 **Files:**
+
 - `src/modules/auth/` (sudah ada)
 - `src/db/schema.ts` → `users`, `session`, `account`, `verification` (sudah ada)
 
 **Tasks:**
+
 - [x] Setup Better Auth dengan Google OAuth
 - [ ] Tambah field `role` (tenant/landlord/admin) ke Better Auth user creation
 - [ ] Setup middleware `requireRole()` untuk role-based access
@@ -46,16 +50,28 @@
 ---
 
 #### **1.2 Property Management** 🏠
+
 **Files:**
+
 - `src/modules/properties/`
 - `src/db/schema.ts` → `properties` (sudah ada)
 
 **Current Schema:**
+
 ```typescript
-properties: id, name, address, price, description, available, landlordId, createdAt, updatedAt
+properties: (id,
+  name,
+  address,
+  price,
+  description,
+  available,
+  landlordId,
+  createdAt,
+  updatedAt);
 ```
 
 **Tasks:**
+
 - [ ] Endpoint: `GET /api/properties` — list all (with pagination)
 - [ ] Endpoint: `GET /api/properties/:id` — detail
 - [ ] Endpoint: `POST /api/properties` — create (landlord only)
@@ -69,11 +85,14 @@ properties: id, name, address, price, description, available, landlordId, create
 ---
 
 #### **1.3 File Storage — R2 Bucket** 📦
+
 **Files:**
+
 - `src/services/r2.service.ts` (baru)
 - `src/modules/uploads/` (baru)
 
 **Tasks:**
+
 - [ ] Setup R2 binding di `wrangler.toml`
 - [ ] Create `r2.service.ts` — upload, delete, get signed URL
 - [ ] Endpoint: `POST /api/uploads/presign` — get presigned URL untuk upload
@@ -89,14 +108,18 @@ properties: id, name, address, price, description, available, landlordId, create
 ---
 
 ### **PHASE 2: Rental Lifecycle (Week 3-4)**
+
 **Goal:** Booking → Contract → Escrow → Move-in/Move-out
 
 #### **2.1 Booking & Rental Agreement** 📝
+
 **Files:**
+
 - `src/modules/bookings/` (sudah ada, perlu diperluas)
 - `src/db/schema.ts` → `bookings`, `contracts` (baru)
 
 **Schema Additions:**
+
 ```typescript
 contracts: {
   id, propertyId, tenantId, landlordId,
@@ -110,6 +133,7 @@ contracts: {
 ```
 
 **Tasks:**
+
 - [ ] Endpoint: `POST /api/bookings/:id/accept` — landlord accept booking
 - [ ] Endpoint: `POST /api/bookings/:id/reject` — landlord reject booking
 - [ ] Endpoint: `POST /api/bookings/:id/cancel` — tenant cancel
@@ -124,16 +148,20 @@ contracts: {
 ---
 
 #### **2.2 Smart Contract Generation — AI** 🤖
+
 **Files:**
+
 - `src/services/ai.service.ts` (baru)
 - `src/modules/contracts/` (baru)
 
 **AI Integration:**
+
 - Provider: Google Gemini API / OpenRouter
 - Model: Gemini 2.0 Flash (untuk teks generation)
 - Prompt: Generate KUHPerdata-compliant contract berdasarkan property details
 
 **Tasks:**
+
 - [ ] Setup AI service (`ai.service.ts`) — wrapper untuk Gemini/OpenRouter
 - [ ] Create contract template system (dengan placeholders)
 - [ ] Implement `generateContract()` — call AI dengan property + user data
@@ -147,11 +175,14 @@ contracts: {
 ---
 
 #### **2.3 AI Property Inspection — Gemini Vision** 📸
+
 **Files:**
+
 - `src/modules/inspections/` (baru)
 - `src/db/schema.ts` → `inspections`, `inspection_items` (baru)
 
 **Schema Additions:**
+
 ```typescript
 inspections: {
   id, contractId, propertyId,
@@ -177,6 +208,7 @@ inspection_items: {
 ```
 
 **Tasks:**
+
 - [ ] Setup inspection schema
 - [ ] Endpoint: `POST /api/inspections` — create inspection (auto saat contract signed)
 - [ ] Endpoint: `POST /api/inspections/:id/photos` — upload photo (ke R2)
@@ -199,15 +231,19 @@ inspection_items: {
 ---
 
 ### **PHASE 3: Escrow & Payments (Week 5-6)**
+
 **Goal:** Midtrans Integration, Escrow Management, Auto-disbursement
 
 #### **3.1 Payment & Escrow System** 💰
+
 **Files:**
+
 - `src/modules/payments/` (baru)
 - `src/services/midtrans.service.ts` (baru)
 - `src/db/schema.ts` → `payments`, `escrows` (baru)
 
 **Schema Additions:**
+
 ```typescript
 escrows: {
   id, contractId,
@@ -235,6 +271,7 @@ payments: {
 ```
 
 **Tasks:**
+
 - [ ] Setup Midtrans API integration (`midtrans.service.ts`)
   - Create payment request
   - Handle webhook notifications
@@ -254,11 +291,14 @@ payments: {
 ---
 
 #### **3.2 Landlord Subscription System** 💳
+
 **Files:**
+
 - `src/modules/subscriptions/` (baru)
 - `src/db/schema.ts` → `subscriptions` (baru)
 
 **Schema Additions:**
+
 ```typescript
 subscriptions: {
   id, userId,
@@ -271,6 +311,7 @@ subscriptions: {
 ```
 
 **Tasks:**
+
 - [ ] Setup subscription schema
 - [ ] Implement middleware `requireSubscription()` — check if landlord can access premium features
 - [ ] Endpoint: `POST /api/subscriptions/upgrade` — upgrade to Pro (IDR 49,000/month)
@@ -286,14 +327,18 @@ subscriptions: {
 ---
 
 ### **PHASE 4: Dispute Resolution (Week 7-8)**
+
 **Goal:** AI Arbitration, Evidence Management, Verdict System
 
 #### **4.1 Dispute Management** ⚖️
+
 **Files:**
+
 - `src/modules/disputes/` (baru)
 - `src/db/schema.ts` → `disputes`, `dispute_messages`, `dispute_evidence` (baru)
 
 **Schema Additions:**
+
 ```typescript
 disputes: {
   id, contractId, inspectionId,
@@ -328,6 +373,7 @@ dispute_evidence: {
 ```
 
 **Tasks:**
+
 - [ ] Setup dispute schema
 - [ ] Endpoint: `POST /api/disputes` — create dispute (from inspection mismatch)
 - [ ] Endpoint: `GET /api/disputes/:id` — get dispute detail (with all messages & evidence)
@@ -350,13 +396,17 @@ dispute_evidence: {
 ---
 
 ### **PHASE 5: Dashboard & Analytics (Week 9-10)**
+
 **Goal:** User Dashboard, Property Analytics, Reputation System
 
 #### **5.1 User Dashboard & Analytics** 📊
+
 **Files:**
+
 - `src/modules/dashboard/` (baru)
 
 **Tasks:**
+
 - [ ] Endpoint: `GET /api/dashboard/tenant` — tenant dashboard data
   - Active contracts
   - Upcoming payments
@@ -379,22 +429,27 @@ dispute_evidence: {
 ---
 
 #### **5.2 Reputation System** ⭐
+
 **Files:**
+
 - `src/db/schema.ts` → `reviews` (baru)
 
 **Schema Additions:**
+
 ```typescript
 reviews: {
-  id, contractId,
-  reviewerId (text), // userId
-  revieweeId (text), // userId
-  rating (integer), // 1-5
-  comment (text),
-  createdAt
+  (id,
+    contractId,
+    reviewerId(text), // userId
+    revieweeId(text), // userId
+    rating(integer), // 1-5
+    comment(text),
+    createdAt);
 }
 ```
 
 **Tasks:**
+
 - [ ] Setup review schema
 - [ ] Endpoint: `POST /api/reviews` — submit review (after contract ends)
 - [ ] Endpoint: `GET /api/users/:id/reputation` — get user's reputation score
@@ -407,14 +462,18 @@ reviews: {
 ---
 
 ### **PHASE 6: Notifications & Polish (Week 11-12)**
+
 **Goal:** Email Notifications, Reminders, Bug Fixes, Performance
 
 #### **6.1 Notification System** 🔔
+
 **Files:**
+
 - `src/services/notification.service.ts` (baru)
 - `src/db/schema.ts` → `notifications` (baru)
 
 **Schema Additions:**
+
 ```typescript
 notifications: {
   id, userId,
@@ -429,6 +488,7 @@ notifications: {
 ```
 
 **Tasks:**
+
 - [ ] Setup notification schema
 - [ ] Setup Resend/SendGrid untuk email (atau Cloudflare Email Routing)
 - [ ] Implement `sendNotification()` — queue & send
@@ -446,7 +506,9 @@ notifications: {
 ---
 
 #### **6.2 Performance & Polish** ✨
+
 **Tasks:**
+
 - [ ] Setup rate limiting (Better Auth sudah ada, tambah untuk endpoints lain)
 - [ ] Setup caching untuk frequently-accessed data (dashboard, property list)
 - [ ] Audit logging untuk semua critical actions (contract sign, escrow release, verdict)
@@ -552,71 +614,71 @@ notifications
 
 ## 🔐 API Endpoints Summary
 
-| Module | Method | Endpoint | Access | Status |
-|---|---|---|---|---|
-| **Auth** | POST/GET | `/api/auth/*` | Public | ✅ |
-| **Users** | GET | `/api/me` | Authenticated | ❌ |
-| | PATCH | `/api/users/me` | Authenticated | ❌ |
-| | GET | `/api/users/:id/reputation` | Public | ❌ |
-| **Properties** | GET | `/api/properties` | Public | ❌ |
-| | GET | `/api/properties/:id` | Public | ❌ |
-| | POST | `/api/properties` | Landlord | ❌ |
-| | PATCH | `/api/properties/:id` | Owner | ❌ |
-| | DELETE | `/api/properties/:id` | Owner | ❌ |
-| | GET | `/api/properties/my` | Landlord | ❌ |
-| **Bookings** | POST | `/api/bookings` | Tenant | ❌ |
-| | POST | `/api/bookings/:id/accept` | Landlord | ❌ |
-| | POST | `/api/bookings/:id/reject` | Landlord | ❌ |
-| | POST | `/api/bookings/:id/cancel` | Tenant | ❌ |
-| | GET | `/api/bookings/my` | Authenticated | ❌ |
-| **Contracts** | POST | `/api/contracts/generate` | Authenticated | ❌ |
-| | GET | `/api/contracts/:id` | Parties | ❌ |
-| | POST | `/api/contracts/:id/sign` | Parties | ❌ |
-| | POST | `/api/contracts/:id/regenerate` | Parties | ❌ |
-| | GET | `/api/contracts/:id/fairness` | Parties | ❌ |
-| **Inspections** | POST | `/api/inspections` | Auto | ❌ |
-| | POST | `/api/inspections/:id/photos` | Parties | ❌ |
-| | GET | `/api/inspections/:id` | Parties | ❌ |
-| | POST | `/api/inspections/:id/analyze` | System | ❌ |
-| | POST | `/api/inspections/:id/compare` | System | ❌ |
-| **Uploads** | POST | `/api/uploads/presign` | Authenticated | ❌ |
-| | DELETE | `/api/uploads/:key` | Owner | ❌ |
-| | GET | `/api/uploads/:key/url` | Authenticated | ❌ |
-| **Escrows** | POST | `/api/escrows` | System | ❌ |
-| | GET | `/api/escrows/:id` | Parties | ❌ |
-| | POST | `/api/escrows/:id/pay` | Tenant | ❌ |
-| **Payments** | GET | `/api/payments/my` | Authenticated | ❌ |
-| **Subscriptions** | POST | `/api/subscriptions/upgrade` | Landlord | ❌ |
-| | GET | `/api/subscriptions/me` | Landlord | ❌ |
-| | POST | `/api/subscriptions/cancel` | Landlord | ❌ |
-| **Disputes** | POST | `/api/disputes` | Parties | ❌ |
-| | GET | `/api/disputes/:id` | Parties | ❌ |
-| | POST | `/api/disputes/:id/message` | Parties | ❌ |
-| | POST | `/api/disputes/:id/evidence` | Parties | ❌ |
-| | POST | `/api/disputes/:id/mediate` | System | ❌ |
-| | POST | `/api/disputes/:id/accept` | Parties | ❌ |
-| | POST | `/api/disputes/:id/reject` | Parties | ❌ |
-| **Dashboard** | GET | `/api/dashboard/tenant` | Tenant | ❌ |
-| | GET | `/api/dashboard/landlord` | Landlord | ❌ |
-| | GET | `/api/dashboard/analytics/property/:id` | Owner | ❌ |
-| **Reviews** | POST | `/api/reviews` | Parties | ❌ |
-| | GET | `/api/users/:id/reviews` | Public | ❌ |
-| **Notifications** | GET | `/api/notifications` | Authenticated | ❌ |
-| | POST | `/api/notifications/:id/read` | Owner | ❌ |
-| **Webhooks** | POST | `/api/webhooks/midtrans` | System | ❌ |
-| | POST | `/api/webhooks/midtrans/subscription` | System | ❌ |
+| Module            | Method   | Endpoint                                | Access        | Status |
+| ----------------- | -------- | --------------------------------------- | ------------- | ------ |
+| **Auth**          | POST/GET | `/api/auth/*`                           | Public        | ✅     |
+| **Users**         | GET      | `/api/me`                               | Authenticated | ❌     |
+|                   | PATCH    | `/api/users/me`                         | Authenticated | ❌     |
+|                   | GET      | `/api/users/:id/reputation`             | Public        | ❌     |
+| **Properties**    | GET      | `/api/properties`                       | Public        | ❌     |
+|                   | GET      | `/api/properties/:id`                   | Public        | ❌     |
+|                   | POST     | `/api/properties`                       | Landlord      | ❌     |
+|                   | PATCH    | `/api/properties/:id`                   | Owner         | ❌     |
+|                   | DELETE   | `/api/properties/:id`                   | Owner         | ❌     |
+|                   | GET      | `/api/properties/my`                    | Landlord      | ❌     |
+| **Bookings**      | POST     | `/api/bookings`                         | Tenant        | ❌     |
+|                   | POST     | `/api/bookings/:id/accept`              | Landlord      | ❌     |
+|                   | POST     | `/api/bookings/:id/reject`              | Landlord      | ❌     |
+|                   | POST     | `/api/bookings/:id/cancel`              | Tenant        | ❌     |
+|                   | GET      | `/api/bookings/my`                      | Authenticated | ❌     |
+| **Contracts**     | POST     | `/api/contracts/generate`               | Authenticated | ❌     |
+|                   | GET      | `/api/contracts/:id`                    | Parties       | ❌     |
+|                   | POST     | `/api/contracts/:id/sign`               | Parties       | ❌     |
+|                   | POST     | `/api/contracts/:id/regenerate`         | Parties       | ❌     |
+|                   | GET      | `/api/contracts/:id/fairness`           | Parties       | ❌     |
+| **Inspections**   | POST     | `/api/inspections`                      | Auto          | ❌     |
+|                   | POST     | `/api/inspections/:id/photos`           | Parties       | ❌     |
+|                   | GET      | `/api/inspections/:id`                  | Parties       | ❌     |
+|                   | POST     | `/api/inspections/:id/analyze`          | System        | ❌     |
+|                   | POST     | `/api/inspections/:id/compare`          | System        | ❌     |
+| **Uploads**       | POST     | `/api/uploads/presign`                  | Authenticated | ❌     |
+|                   | DELETE   | `/api/uploads/:key`                     | Owner         | ❌     |
+|                   | GET      | `/api/uploads/:key/url`                 | Authenticated | ❌     |
+| **Escrows**       | POST     | `/api/escrows`                          | System        | ❌     |
+|                   | GET      | `/api/escrows/:id`                      | Parties       | ❌     |
+|                   | POST     | `/api/escrows/:id/pay`                  | Tenant        | ❌     |
+| **Payments**      | GET      | `/api/payments/my`                      | Authenticated | ❌     |
+| **Subscriptions** | POST     | `/api/subscriptions/upgrade`            | Landlord      | ❌     |
+|                   | GET      | `/api/subscriptions/me`                 | Landlord      | ❌     |
+|                   | POST     | `/api/subscriptions/cancel`             | Landlord      | ❌     |
+| **Disputes**      | POST     | `/api/disputes`                         | Parties       | ❌     |
+|                   | GET      | `/api/disputes/:id`                     | Parties       | ❌     |
+|                   | POST     | `/api/disputes/:id/message`             | Parties       | ❌     |
+|                   | POST     | `/api/disputes/:id/evidence`            | Parties       | ❌     |
+|                   | POST     | `/api/disputes/:id/mediate`             | System        | ❌     |
+|                   | POST     | `/api/disputes/:id/accept`              | Parties       | ❌     |
+|                   | POST     | `/api/disputes/:id/reject`              | Parties       | ❌     |
+| **Dashboard**     | GET      | `/api/dashboard/tenant`                 | Tenant        | ❌     |
+|                   | GET      | `/api/dashboard/landlord`               | Landlord      | ❌     |
+|                   | GET      | `/api/dashboard/analytics/property/:id` | Owner         | ❌     |
+| **Reviews**       | POST     | `/api/reviews`                          | Parties       | ❌     |
+|                   | GET      | `/api/users/:id/reviews`                | Public        | ❌     |
+| **Notifications** | GET      | `/api/notifications`                    | Authenticated | ❌     |
+|                   | POST     | `/api/notifications/:id/read`           | Owner         | ❌     |
+| **Webhooks**      | POST     | `/api/webhooks/midtrans`                | System        | ❌     |
+|                   | POST     | `/api/webhooks/midtrans/subscription`   | System        | ❌     |
 
 ---
 
 ## 🛠️ Services (Cross-Module)
 
-| Service | File | Purpose |
-|---|---|---|
-| **AI Service** | `src/services/ai.service.ts` | Gemini/OpenRouter wrapper |
-| **R2 Storage** | `src/services/r2.service.ts` | File upload, delete, URL |
-| **Midtrans** | `src/services/midtrans.service.ts` | Payment & Escrow |
-| **Notification** | `src/services/notification.service.ts` | Email, push, SMS |
-| **Reputation** | `src/services/reputation.service.ts` | Calculate user scores |
+| Service          | File                                   | Purpose                   |
+| ---------------- | -------------------------------------- | ------------------------- |
+| **AI Service**   | `src/services/ai.service.ts`           | Gemini/OpenRouter wrapper |
+| **R2 Storage**   | `src/services/r2.service.ts`           | File upload, delete, URL  |
+| **Midtrans**     | `src/services/midtrans.service.ts`     | Payment & Escrow          |
+| **Notification** | `src/services/notification.service.ts` | Email, push, SMS          |
+| **Reputation**   | `src/services/reputation.service.ts`   | Calculate user scores     |
 
 ---
 
@@ -664,24 +726,24 @@ NODE_ENV=production
 
 ## 📅 Timeline Summary
 
-| Phase | Duration | Deliverables |
-|---|---|---|
-| **Phase 1: Foundation** | Week 1-2 | Auth, Properties, R2 Storage |
-| **Phase 2: Rental Lifecycle** | Week 3-4 | Contracts, Bookings, AI Inspection |
-| **Phase 3: Escrow & Payments** | Week 5-6 | Midtrans, Escrow, Subscriptions |
-| **Phase 4: Dispute Resolution** | Week 7-8 | AI Arbitration, Evidence System |
-| **Phase 5: Dashboard & Analytics** | Week 9-10 | Dashboards, Reputation System |
-| **Phase 6: Notifications & Polish** | Week 11-12 | Email, Reminders, Performance |
+| Phase                               | Duration   | Deliverables                       |
+| ----------------------------------- | ---------- | ---------------------------------- |
+| **Phase 1: Foundation**             | Week 1-2   | Auth, Properties, R2 Storage       |
+| **Phase 2: Rental Lifecycle**       | Week 3-4   | Contracts, Bookings, AI Inspection |
+| **Phase 3: Escrow & Payments**      | Week 5-6   | Midtrans, Escrow, Subscriptions    |
+| **Phase 4: Dispute Resolution**     | Week 7-8   | AI Arbitration, Evidence System    |
+| **Phase 5: Dashboard & Analytics**  | Week 9-10  | Dashboards, Reputation System      |
+| **Phase 6: Notifications & Polish** | Week 11-12 | Email, Reminders, Performance      |
 
 ---
 
 ## 🎯 Priority Legend
 
-| Priority | Meaning | Action |
-|---|---|---|
-| **P0** | Critical — MVP harus ada | Kerjain dulu |
-| **P1** | Important — Perlu untuk production | Phase berikutnya |
-| **P2** | Nice to have — Bisa ditunda | Nanti saja |
+| Priority | Meaning                            | Action           |
+| -------- | ---------------------------------- | ---------------- |
+| **P0**   | Critical — MVP harus ada           | Kerjain dulu     |
+| **P1**   | Important — Perlu untuk production | Phase berikutnya |
+| **P2**   | Nice to have — Bisa ditunda        | Nanti saja       |
 
 ---
 

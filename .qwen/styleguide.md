@@ -7,6 +7,7 @@
 This document is the authoritative guide for maintaining code quality, architectural integrity, and stylistic consistency in the **rentsafe-ai** project.
 
 **Related Documents:**
+
 - `QWEN.MD` — Full AI assistant guide with service guidelines
 - `AGENTS.MD` — Architecture rules & 8 Golden Rules
 - `IMPLEMENTATION_PLAN.md` — Phase-by-phase implementation plan (50+ endpoints)
@@ -61,7 +62,12 @@ This document is the authoritative guide for maintaining code quality, architect
 
   ```typescript
   // ✅ GOOD
-  type ContractStatus = "draft" | "pending_signature" | "active" | "expired" | "terminated";
+  type ContractStatus =
+    | "draft"
+    | "pending_signature"
+    | "active"
+    | "expired"
+    | "terminated";
 
   // ❌ BAD
   type ContractStatus = string; // Too broad
@@ -181,13 +187,13 @@ This document is the authoritative guide for maintaining code quality, architect
 
 ### 6.2. Planned Services
 
-| Service | File | Purpose |
-|---|---|---|
-| AI Service | `src/services/ai.service.ts` | Gemini/OpenRouter wrapper |
-| R2 Storage | `src/services/r2.service.ts` | File upload, delete, URL |
-| Midtrans | `src/services/midtrans.service.ts` | Payment & Escrow |
-| Notification | `src/services/notification.service.ts` | Email/push notifications |
-| Reputation | `src/services/reputation.service.ts` | Calculate user scores |
+| Service      | File                                   | Purpose                   |
+| ------------ | -------------------------------------- | ------------------------- |
+| AI Service   | `src/services/ai.service.ts`           | Gemini/OpenRouter wrapper |
+| R2 Storage   | `src/services/r2.service.ts`           | File upload, delete, URL  |
+| Midtrans     | `src/services/midtrans.service.ts`     | Payment & Escrow          |
+| Notification | `src/services/notification.service.ts` | Email/push notifications  |
+| Reputation   | `src/services/reputation.service.ts`   | Calculate user scores     |
 
 ### 6.3. Service Purity
 
