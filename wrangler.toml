@@ -3,6 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2025-03-17"
 compatibility_flags = ["nodejs_compat"]
 
+# Cloudflare Hyperdrive for PostgreSQL connection pooling
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "84d544be300d480689904aeafba505f5"
+
 # Production secrets (set via: wrangler secret put <NAME>)
 [[vars]]
 DATABASE_URL = { secret = "DATABASE_URL" }
