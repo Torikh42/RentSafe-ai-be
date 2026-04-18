@@ -8,31 +8,21 @@ compatibility_flags = ["nodejs_compat"]
 binding = "HYPERDRIVE"
 id = "84d544be300d480689904aeafba505f5"
 
-# Production secrets (set via: wrangler secret put <NAME>)
-[[vars]]
-DATABASE_URL = { secret = "DATABASE_URL" }
-
-[[vars]]
-BETTER_AUTH_SECRET = { secret = "BETTER_AUTH_SECRET" }
-
-[[vars]]
-GOOGLE_CLIENT_ID = { secret = "GOOGLE_CLIENT_ID" }
-
-[[vars]]
-GOOGLE_CLIENT_SECRET = { secret = "GOOGLE_CLIENT_SECRET" }
-
-[[vars]]
-R2_PUBLIC_URL = { secret = "R2_PUBLIC_URL" }
-
-[[vars]]
-BETTER_AUTH_URL = { secret = "BETTER_AUTH_URL" }
-
-[[vars]]
-FRONTEND_URLS = { secret = "FRONTEND_URLS" }
-
-# Optional: Enable Logpush for observability
-# [[logs]]
-# destination = "logtail-destination"
+# ============================================================
+# Secrets — DO NOT define secrets in this file.
+# Set via CLI: wrangler secret put <SECRET_NAME>
+#
+# Required secrets:
+#   - DATABASE_URL
+#   - BETTER_AUTH_SECRET
+#   - BETTER_AUTH_URL
+#   - GOOGLE_CLIENT_ID
+#   - GOOGLE_CLIENT_SECRET
+#   - R2_PUBLIC_URL
+#   - FRONTEND_URLS
+#
+# For local development, set these in .dev.vars
+# ============================================================
 
 # Dev environment uses .dev.vars automatically
 [env.development]
