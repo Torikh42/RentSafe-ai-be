@@ -1,6 +1,6 @@
-# QWEN.MD — AI Assistant Guide untuk RentSafe AI
+# GEMINI.MD — AI Assistant Guide untuk RentSafe AI
 
-> **PENTING:** File ini adalah panduan personalisasi untuk Qwen Code (AI assistant) yang bekerja di repository ini. SELALU baca dan ikuti panduan ini sebelum memulai pekerjaan.
+> **PENTING:** File ini adalah panduan personalisasi untuk GEMINI CLI (AI assistant) yang bekerja di repository ini. SELALU baca dan ikuti panduan ini sebelum memulai pekerjaan.
 
 ---
 
@@ -294,4 +294,4 @@ wrangler tail        # Watch logs
 ---
 
 **Last Updated:** 10 April 2026
-**Maintained By:** Qwen Code (AI Assistant)
+**Maintained By:** GEMINI CLI (AI Assistant)
