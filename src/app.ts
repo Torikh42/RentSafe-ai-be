@@ -5,6 +5,8 @@ import { EnvSchema } from "./env";
 import { createRouter } from "./factory";
 import { corsMiddleware } from "./middleware/cors";
 import { authRouter } from "./modules/auth";
+import { usersRouter } from "./modules/users";
+import propertiesRouter from "./modules/properties";
 
 const app = createRouter();
 
@@ -111,6 +113,12 @@ app.get(
 
 // Auth — semua /api/auth/* didelegasikan ke Better Auth
 app.route("/api/auth", authRouter);
+
+// Users
+app.route("/api/users", usersRouter);
+
+// Properties
+app.route("/api/properties", propertiesRouter);
 
 app.get("/", (c) => c.text("RentSafe-ai API is running."));
 

@@ -7,6 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 [[hyperdrive]]
 binding = "HYPERDRIVE"
 id = "84d544be300d480689904aeafba505f5"
+localConnectionString = "postgresql://rentsafe_user:rentsafe_password@localhost:5444/rentsafe_db"
 
 # ============================================================
 # Secrets — DO NOT define secrets in this file.

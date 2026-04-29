@@ -8,7 +8,7 @@ This document is the authoritative guide for maintaining code quality, architect
 
 **Related Documents:**
 
-- `QWEN.MD` — Full AI assistant guide with service guidelines
+- `GEMINI.MD` — Full AI assistant guide with service guidelines
 - `AGENTS.MD` — Architecture rules & 8 Golden Rules
 - `IMPLEMENTATION_PLAN.md` — Phase-by-phase implementation plan (50+ endpoints)
 - `Geost_RentSafeAI.md` — Product specification

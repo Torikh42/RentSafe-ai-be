@@ -22,7 +22,7 @@
 **Dokumen Referensi:**
 - `Geost_RentSafeAI.md` — Dokumen lengkap (background, solution, architecture, business model)
 - `IMPLEMENTATION_PLAN.md` — Phase-by-phase implementation plan
-- `QWEN.MD` — Detailed AI assistant guide (lebih lengkap dengan service guidelines)
+- `GEMINI.MD` — Detailed AI assistant guide (lebih lengkap dengan service guidelines)
 
 ---
 
