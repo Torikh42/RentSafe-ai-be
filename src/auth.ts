@@ -29,6 +29,16 @@ export function createAuth(env: Env) {
       },
     }),
 
+    user: {
+      additionalFields: {
+        role: {
+          type: "string",
+          required: false,
+          defaultValue: "tenant",
+        },
+      },
+    },
+
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
 
