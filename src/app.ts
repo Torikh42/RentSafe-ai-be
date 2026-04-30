@@ -7,6 +7,7 @@ import { corsMiddleware } from "./middleware/cors";
 import { authRouter } from "./modules/auth";
 import { usersRouter } from "./modules/users";
 import propertiesRouter from "./modules/properties";
+import inspectionsRouter from "./modules/inspections";
 
 const app = createRouter();
 
@@ -119,6 +120,9 @@ app.route("/api/users", usersRouter);
 
 // Properties
 app.route("/api/properties", propertiesRouter);
+
+// Inspections
+app.route("/api/inspections", inspectionsRouter);
 
 app.get("/", (c) => c.text("RentSafe-ai API is running."));
 

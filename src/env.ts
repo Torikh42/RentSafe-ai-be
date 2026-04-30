@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { R2Bucket } from "@cloudflare/workers-types";
 
 /**
  * Cloudflare Hyperdrive binding type
@@ -39,9 +40,12 @@ export const EnvSchema = z.object({
     ),
   NODE_ENV: z.enum(["development", "production"]).optional(),
   R2_PUBLIC_URL: z.string().url("R2_PUBLIC_URL harus berupa URL yang valid"),
+  GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1, "API Key wajib diisi"),
 });
 
 export type Env = z.infer<typeof EnvSchema> & {
   /** Cloudflare Hyperdrive binding for connection pooling */
   HYPERDRIVE?: Hyperdrive;
+  /** Cloudflare R2 binding */
+  STORAGE: R2Bucket;
 };
