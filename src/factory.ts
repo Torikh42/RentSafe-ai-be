@@ -10,7 +10,6 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { createFactory } from "hono/factory";
 import type { Context } from "hono";
 import type { Env } from "./env";
-import type { R2Bucket } from "@cloudflare/workers-types";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,9 +42,7 @@ export type AppVariables = {
  * Dipakai di semua Hono instance di seluruh aplikasi.
  */
 export type AppEnv = {
-  Bindings: Env & {
-    BUCKET?: R2Bucket;
-  };
+  Bindings: Env;
   Variables: AppVariables;
 };
 

@@ -87,3 +87,28 @@ export const verification = pgTable("verification", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull(),
 });
+
+export const inspections = pgTable("inspections", {
+  id: text("id").primaryKey(),
+  propertyId: text("property_id")
+    .references(() => properties.id)
+    .notNull(),
+  landlordId: text("landlord_id")
+    .references(() => users.id)
+    .notNull(),
+  type: text("type", { enum: ["pre", "post"] }).notNull(),
+  summary: text("summary"),
+  status: text("status", { enum: ["pending", "completed", "failed"] })
+    .default("pending")
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const inspectionImages = pgTable("inspection_images", {
+  id: text("id").primaryKey(),
+  inspectionId: text("inspection_id")
+    .references(() => inspections.id)
+    .notNull(),
+  url: text("url").notNull(),
+  aiAnalysis: text("ai_analysis"),
+});
