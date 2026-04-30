@@ -59,7 +59,7 @@ export class InspectionsService {
   }
 
   /**
-   * Analyze an image using Gemini Flash 2.0
+   * Analyze an image using Gemini 3 Flash
    */
   async analyzeImageCondition(
     imageBuffer: ArrayBuffer,
@@ -72,7 +72,7 @@ export class InspectionsService {
       const uint8Array = new Uint8Array(imageBuffer);
 
       const result = await generateObject({
-        model: googleClient("gemini-2.0-flash-exp"),
+        model: googleClient("gemini-3.1-flash-lite-preview"),
         schema: AiAnalysisResultSchema,
         messages: [
           {
