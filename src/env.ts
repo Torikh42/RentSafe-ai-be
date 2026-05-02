@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { R2Bucket } from "@cloudflare/workers-types";
 
 /**
  * Cloudflare Hyperdrive binding type
@@ -8,6 +7,16 @@ import type { R2Bucket } from "@cloudflare/workers-types";
 export interface Hyperdrive {
   /** Connection string to use for database connections through Hyperdrive */
   connectionString: string;
+}
+
+/**
+ * Cloudinary configuration
+ * Used for image storage and CDN delivery
+ */
+export interface CloudinaryConfig {
+  cloudName: string;
+  apiKey: string;
+  apiSecret: string;
 }
 
 export const EnvSchema = z.object({
@@ -39,13 +48,14 @@ export const EnvSchema = z.object({
         .min(1, "FRONTEND_URLS harus berisi setidaknya satu URL yang valid"),
     ),
   NODE_ENV: z.enum(["development", "production"]).optional(),
-  R2_PUBLIC_URL: z.string().url("R2_PUBLIC_URL harus berupa URL yang valid"),
+  // Cloudinary configuration (replaces R2)
+  CLOUDINARY_CLOUD_NAME: z.string().min(1, "CLOUDINARY_CLOUD_NAME wajib diisi"),
+  CLOUDINARY_API_KEY: z.string().min(1, "CLOUDINARY_API_KEY wajib diisi"),
+  CLOUDINARY_API_SECRET: z.string().min(1, "CLOUDINARY_API_SECRET wajib diisi"),
   GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1, "API Key wajib diisi"),
 });
 
 export type Env = z.infer<typeof EnvSchema> & {
   /** Cloudflare Hyperdrive binding for connection pooling */
   HYPERDRIVE?: Hyperdrive;
-  /** Cloudflare R2 binding */
-  STORAGE: R2Bucket;
 };

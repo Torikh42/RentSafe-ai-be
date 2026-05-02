@@ -1,10 +1,8 @@
 import type { RouteHandler } from "@hono/zod-openapi";
 import type { AppEnv } from "../../factory";
 import { getDb } from "../../db";
-import {
-  InspectionsService,
-  type R2BucketLike,
-} from "../../services/inspections.service";
+import { InspectionsService } from "../../services/inspections.service";
+import { CloudinaryService } from "../../services/cloudinary.service";
 import {
   analyzeInspectionRoute,
   getPropertyInspectionsRoute,
@@ -22,9 +20,16 @@ export const analyzeInspectionHandler: RouteHandler<
   const { propertyId, type, images } = c.req.valid("form");
 
   const db = getDb(c.env);
+
+  // Create Cloudinary service from environment variables
+  const cloudinary = new CloudinaryService(
+    c.env.CLOUDINARY_CLOUD_NAME,
+    c.env.CLOUDINARY_API_KEY,
+    c.env.CLOUDINARY_API_SECRET,
+  );
+
   const service = new InspectionsService(
-    c.env.STORAGE as R2BucketLike,
-    c.env.R2_PUBLIC_URL,
+    cloudinary,
     c.env.GOOGLE_GENERATIVE_AI_API_KEY,
     db,
   );
@@ -40,8 +45,12 @@ export const analyzeInspectionHandler: RouteHandler<
       // Analyze
       const aiAnalysis = await service.analyzeImageCondition(arrayBuffer);
 
-      // Upload to R2
-      const url = await service.uploadToR2(file, `inspections/${propertyId}`);
+      // Upload to Cloudinary
+      const url = await service.uploadToCloudinary(
+        file,
+        "inspections",
+        propertyId,
+      );
 
       imagesData.push({ url, aiAnalysis });
     }
@@ -69,9 +78,16 @@ export const getPropertyInspectionsHandler: RouteHandler<
   AppEnv
 > = async (c) => {
   const db = getDb(c.env);
+
+  // Create Cloudinary service from environment variables
+  const cloudinary = new CloudinaryService(
+    c.env.CLOUDINARY_CLOUD_NAME,
+    c.env.CLOUDINARY_API_KEY,
+    c.env.CLOUDINARY_API_SECRET,
+  );
+
   const service = new InspectionsService(
-    c.env.STORAGE as R2BucketLike,
-    c.env.R2_PUBLIC_URL,
+    cloudinary,
     c.env.GOOGLE_GENERATIVE_AI_API_KEY,
     db,
   );

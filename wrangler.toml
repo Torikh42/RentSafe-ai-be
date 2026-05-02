@@ -9,9 +9,7 @@ binding = "HYPERDRIVE"
 id = "84d544be300d480689904aeafba505f5"
 localConnectionString = "postgresql://rentsafe_user:rentsafe_password@localhost:5444/rentsafe_db"
 
-[[r2_buckets]]
-binding = 'STORAGE'
-bucket_name = 'torikh'
+
 
 # ============================================================
 # Secrets — DO NOT define secrets in this file.
@@ -23,7 +21,6 @@ bucket_name = 'torikh'
 #   - BETTER_AUTH_URL
 #   - GOOGLE_CLIENT_ID
 #   - GOOGLE_CLIENT_SECRET
-#   - R2_PUBLIC_URL
 #   - FRONTEND_URLS
 #
 # For local development, set these in .dev.vars
