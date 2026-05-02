@@ -5,6 +5,7 @@ import { inspections, inspectionImages } from "../db/schema";
 import * as schema from "../db/schema";
 import { eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { CloudinaryService } from "./cloudinary.service";
 
 // Define the schema for the AI response
 const AiAnalysisResultSchema = z.object({
@@ -21,78 +22,89 @@ const AiAnalysisResultSchema = z.object({
 
 type AiAnalysisResult = z.infer<typeof AiAnalysisResultSchema>;
 
-// Use opaque type to avoid R2Bucket type conflicts between @cloudflare/workers-types
-// and lib.webworker.d.ts - both define R2Bucket with incompatible Headers types
-export type R2BucketLike = {
-  put(
-    key: string,
-    value: ArrayBuffer | string | Blob,
-    options?: { httpMetadata?: Record<string, string> },
-  ): Promise<{ key: string } | null>;
-  get(key: string): Promise<ReadableStream | null>;
-  head(key: string): Promise<{ httpMetadata?: Record<string, string> } | null>;
-  delete(key: string): Promise<void>;
-};
-
 export class InspectionsService {
   constructor(
-    private storage: R2BucketLike,
-    private r2PublicUrl: string,
+    private cloudinary: CloudinaryService,
     private geminiApiKey: string,
     private db: NodePgDatabase<typeof schema>,
   ) {}
 
   /**
-   * Upload a file to Cloudflare R2
+   * Upload a file to Cloudinary
    */
-  async uploadToR2(
+  async uploadToCloudinary(
     file: File,
     folder: string = "inspections",
+    propertyId?: string,
   ): Promise<string> {
     const timestamp = Date.now();
     const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const key = `${folder}/${timestamp}-${cleanName}`;
+    const publicId = propertyId
+      ? `${propertyId}/${timestamp}-${cleanName}`
+      : `${timestamp}-${cleanName}`;
 
     const buffer = await file.arrayBuffer();
-    await this.storage.put(key, buffer);
-    return `${this.r2PublicUrl}/${key}`;
+    const url = await this.cloudinary.upload(buffer, folder, publicId);
+    return url;
   }
 
   /**
-   * Analyze an image using Gemini 3 Flash
+   * Analyze an image using Gemini with fallback models
    */
   async analyzeImageCondition(
     imageBuffer: ArrayBuffer,
   ): Promise<AiAnalysisResult> {
-    try {
-      const googleClient = createGoogleGenerativeAI({
-        apiKey: this.geminiApiKey,
-      });
+    const googleClient = createGoogleGenerativeAI({
+      apiKey: this.geminiApiKey,
+    });
 
-      const uint8Array = new Uint8Array(imageBuffer);
+    const uint8Array = new Uint8Array(imageBuffer);
 
-      const result = await generateObject({
-        model: googleClient("gemini-3.1-flash-lite-preview"),
-        schema: AiAnalysisResultSchema,
-        messages: [
-          {
-            role: "user" as const,
-            content: [
-              {
-                type: "text",
-                text: "Analyze this property inspection image. Identify the room type, describe its overall condition, and list any detected damages or issues with severity and estimated repair cost.",
-              },
-              { type: "image", image: uint8Array },
-            ],
-          },
-        ],
-      });
+    // Order of preference for models (Waterfall fallback)
+    const models = [
+      "gemini-3.1-flash-lite-preview",
+      "gemini-3-flash-preview",
+      "gemini-3.1-pro-preview",
+      "gemini-2.5-flash-lite", // Fallback for stability if preview fails
+    ];
 
-      return result.object;
-    } catch (error) {
-      console.error("AI Analysis Error:", error);
-      throw new Error("Failed to analyze image with AI.");
+    let lastError: unknown = null;
+
+    for (const modelId of models) {
+      try {
+        const result = await generateObject({
+          model: googleClient(modelId),
+          schema: AiAnalysisResultSchema,
+          messages: [
+            {
+              role: "user" as const,
+              content: [
+                {
+                  type: "text",
+                  text: "Analyze this property inspection image. Identify the room type, describe its overall condition, and list any detected damages or issues with severity and estimated repair cost.",
+                },
+                { type: "image", image: uint8Array },
+              ],
+            },
+          ],
+        });
+
+        return result.object;
+      } catch (error) {
+        console.warn(
+          `AI Analysis with ${modelId} failed, trying fallback...`,
+          error,
+        );
+        lastError = error;
+        // Continue to next model
+      }
     }
+
+    console.error("All AI models failed to analyze the image.");
+    throw (
+      lastError ||
+      new Error("Failed to analyze image with any available AI model.")
+    );
   }
 
   /**

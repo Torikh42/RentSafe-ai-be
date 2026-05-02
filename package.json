@@ -30,6 +30,7 @@
     "@scalar/hono-api-reference": "^0.9.47",
     "ai": "^6.0.170",
     "better-auth": "^1.5.1",
+    "cloudinary": "^2.10.0",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
