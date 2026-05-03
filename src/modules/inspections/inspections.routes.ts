@@ -109,3 +109,57 @@ export const getPropertyInspectionsRoute = createRoute({
     },
   },
 });
+
+export const compareInspectionsRoute = createRoute({
+  method: "post",
+  path: "/{id}/compare",
+  tags: ["Inspections"],
+  summary: "Compare a check-out inspection with its baseline check-in",
+  request: {
+    params: z.object({
+      id: z.string().openapi({ param: { name: "id", in: "path" } }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: InspectionResponseSchema,
+        },
+      },
+      description: "Comparison completed successfully",
+    },
+    400: {
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: "Bad Request",
+    },
+    401: {
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: "Unauthorized",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: "Not Found",
+    },
+    500: {
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: "Internal Server Error",
+    },
+  },
+});

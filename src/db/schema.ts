@@ -97,6 +97,8 @@ export const inspections = pgTable("inspections", {
     .references(() => users.id)
     .notNull(),
   type: text("type", { enum: ["pre", "post"] }).notNull(),
+  referenceInspectionId: text("reference_inspection_id"),
+  comparisonReport: text("comparison_report"),
   summary: text("summary"),
   status: text("status", { enum: ["pending", "completed", "failed"] })
     .default("pending")

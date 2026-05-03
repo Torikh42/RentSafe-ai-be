@@ -2,10 +2,12 @@ import { createRouter } from "../../factory";
 import {
   analyzeInspectionRoute,
   getPropertyInspectionsRoute,
+  compareInspectionsRoute,
 } from "./inspections.routes";
 import {
   analyzeInspectionHandler,
   getPropertyInspectionsHandler,
+  compareInspectionsHandler,
 } from "./inspections.handlers";
 import { authMiddleware } from "../../middleware/auth";
 
@@ -19,5 +21,6 @@ inspectionsRouter.openapi(
   getPropertyInspectionsRoute,
   getPropertyInspectionsHandler,
 );
+inspectionsRouter.openapi(compareInspectionsRoute, compareInspectionsHandler);
 
 export default inspectionsRouter;
