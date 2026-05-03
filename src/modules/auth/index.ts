@@ -3,7 +3,7 @@ import { getAuth } from "../../auth";
 
 const router = createRouter();
 
-router.on(["POST", "GET"], "/**", async (c) => {
+router.on(["POST", "GET"], "/*", async (c) => {
   console.log("=== AUTH REQUEST START ===");
   console.log("Method:", c.req.method);
   console.log("Path:", c.req.path);

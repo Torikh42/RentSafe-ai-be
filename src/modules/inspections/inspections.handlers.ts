@@ -6,6 +6,7 @@ import { CloudinaryService } from "../../services/cloudinary.service";
 import {
   analyzeInspectionRoute,
   getPropertyInspectionsRoute,
+  compareInspectionsRoute,
 } from "./inspections.routes";
 
 export const analyzeInspectionHandler: RouteHandler<
@@ -100,5 +101,50 @@ export const getPropertyInspectionsHandler: RouteHandler<
   } catch (error) {
     console.error("Get inspections error:", error);
     return c.json({ error: "Failed to retrieve inspections" }, 500);
+  }
+};
+
+export const compareInspectionsHandler: RouteHandler<
+  typeof compareInspectionsRoute,
+  AppEnv
+> = async (c) => {
+  const user = c.var.user;
+  if (!user) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const { id } = c.req.valid("param");
+  const db = getDb(c.env);
+
+  const cloudinary = new CloudinaryService(
+    c.env.CLOUDINARY_CLOUD_NAME,
+    c.env.CLOUDINARY_API_KEY,
+    c.env.CLOUDINARY_API_SECRET,
+  );
+
+  const service = new InspectionsService(
+    cloudinary,
+    c.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    db,
+  );
+
+  try {
+    const result = await service.compareInspections(id);
+    if (!result) {
+      return c.json({ error: "Inspection not found" }, 404);
+    }
+    return c.json(result, 200);
+  } catch (error) {
+    console.error("Compare inspections error:", error);
+    if (error instanceof Error && error.message.includes("not found")) {
+      return c.json({ error: error.message }, 404);
+    }
+    if (
+      error instanceof Error &&
+      error.message.includes("must be a check-out")
+    ) {
+      return c.json({ error: error.message }, 400);
+    }
+    return c.json({ error: "Failed to compare inspections" }, 500);
   }
 };

@@ -24,6 +24,8 @@ export const InspectionResponseSchema = z.object({
   propertyId: z.string(),
   landlordId: z.string(),
   type: z.enum(["pre", "post"]),
+  referenceInspectionId: z.string().nullable().optional(),
+  comparisonReport: z.any().nullable().optional(), // Can be parsed JSON
   summary: z.string().nullable(),
   status: z.enum(["pending", "completed", "failed"]),
   createdAt: z.string().datetime(),
