@@ -27,15 +27,21 @@ export const properties = pgTable("properties", {
   price: integer("price").notNull(),
   description: text("description"),
   available: boolean("available").default(true).notNull(),
-  landlordId: text("landlord_id").references(() => users.id),
+  landlordId: text("landlord_id")
+    .references(() => users.id)
+    .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const bookings = pgTable("bookings", {
   id: text("id").primaryKey(),
-  propertyId: text("property_id").references(() => properties.id),
-  userId: text("user_id").references(() => users.id),
+  propertyId: text("property_id")
+    .references(() => properties.id)
+    .notNull(),
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
   status: text("status", {
