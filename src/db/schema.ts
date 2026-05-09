@@ -26,6 +26,8 @@ export const properties = pgTable("properties", {
   address: text("address").notNull(),
   price: integer("price").notNull(),
   description: text("description"),
+  image: text("image"),
+
   available: boolean("available").default(true).notNull(),
   landlordId: text("landlord_id")
     .references(() => users.id)

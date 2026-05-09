@@ -1,7 +1,6 @@
+/* eslint-disable max-lines */
 import { createRoute, z } from "@hono/zod-openapi";
 import {
-  createPropertySchema,
-  updatePropertySchema,
   propertyResponseSchema,
   propertiesListResponseSchema,
   errorResponseSchema,
@@ -14,8 +13,18 @@ export const createPropertyRoute = createRoute({
   request: {
     body: {
       content: {
-        "application/json": {
-          schema: createPropertySchema,
+        "multipart/form-data": {
+          schema: z.object({
+            name: z.string().min(1),
+            address: z.string().min(1),
+            price: z.coerce.number().int().positive(),
+            description: z.string().optional(),
+            available: z
+              .string()
+              .default("true")
+              .transform((v) => v === "true" || v === "1"),
+            image: z.custom<File>((v) => v instanceof File).optional(),
+          }),
         },
       },
     },
@@ -106,8 +115,18 @@ export const updatePropertyRoute = createRoute({
     }),
     body: {
       content: {
-        "application/json": {
-          schema: updatePropertySchema,
+        "multipart/form-data": {
+          schema: z.object({
+            name: z.string().min(1).optional(),
+            address: z.string().min(1).optional(),
+            price: z.coerce.number().int().positive().optional(),
+            description: z.string().optional(),
+            available: z
+              .string()
+              .transform((v) => v === "true" || v === "1")
+              .optional(),
+            image: z.custom<File>((v) => v instanceof File).optional(),
+          }),
         },
       },
     },

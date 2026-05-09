@@ -24,6 +24,7 @@ export class PropertiesService {
         address: data.address,
         price: data.price,
         description: data.description,
+        image: data.image,
         available: data.available,
       })
       .returning();
