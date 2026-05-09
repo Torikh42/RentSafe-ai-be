@@ -1,5 +1,5 @@
-import { z } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { getAuth } from "./auth";
 import { EnvSchema } from "./env";
 import { createRouter } from "./factory";
@@ -8,6 +8,7 @@ import { authRouter } from "./modules/auth";
 import { usersRouter } from "./modules/users";
 import propertiesRouter from "./modules/properties";
 import inspectionsRouter from "./modules/inspections";
+import z from "zod";
 
 const app = createRouter();
 
@@ -197,20 +198,24 @@ app.get("/test-login", (c) => {
 });
 
 app.notFound((c) => {
-  return c.json({ error: "Not Found" }, 404);
+  return c.json({ message: "Route not found", data: [] }, 404);
 });
 
 app.onError((err, c) => {
   console.error("Global Hono Error:", err);
+
+  const status =
+    "status" in err && typeof err.status === "number" ? err.status : 500;
+
   return c.json(
     {
-      error:
+      message:
         c.env.NODE_ENV === "development"
           ? err.message
           : "Internal Server Error",
-      stack: c.env.NODE_ENV === "development" ? err.stack : undefined,
+      data: c.env.NODE_ENV === "development" ? [err.stack] : [],
     },
-    500,
+    status as ContentfulStatusCode,
   );
 });
 
