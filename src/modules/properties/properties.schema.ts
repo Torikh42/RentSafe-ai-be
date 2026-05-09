@@ -11,6 +11,11 @@ export const propertySchema = z.object({
     .nullable()
     .optional()
     .openapi({ example: "A beautiful place." }),
+  image: z
+    .string()
+    .nullable()
+    .optional()
+    .openapi({ example: "https://example.com/image.jpg" }),
   available: z.boolean().default(true).openapi({ example: true }),
   landlordId: z.string().openapi({ example: "usr_456" }),
   createdAt: z.union([z.string().datetime(), z.date()]).openapi({
@@ -54,6 +59,11 @@ export const createPropertySchema = z.object({
   price: z.number().int().positive().openapi({ example: 5000000 }),
   description: z.string().optional().openapi({ example: "A beautiful place." }),
   available: z.boolean().optional().default(true).openapi({ example: true }),
+  image: z
+    .string()
+    .optional()
+    .nullable()
+    .openapi({ example: "https://example.com/image.jpg" }),
 });
 
 export const updatePropertySchema = createPropertySchema.partial();

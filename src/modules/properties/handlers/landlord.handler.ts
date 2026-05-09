@@ -11,6 +11,7 @@ import { getAuth } from "../../../auth";
 import { getDb } from "../../../db";
 import { properties } from "../../../db/schema";
 import type { InferSelectModel } from "drizzle-orm";
+import { CloudinaryService } from "../../../services/cloudinary.service";
 
 type Property = InferSelectModel<typeof properties>;
 
@@ -30,13 +31,27 @@ export const createPropertyHandler: RouteHandler<
     return c.json({ message: "Forbidden" }, 403 as const);
   }
 
-  const data = c.req.valid("json");
+  const data = c.req.valid("form");
   const db = getDb(c.env);
+
+  let imageUrl: string | undefined;
+  if (data.image && data.image instanceof File) {
+    const cloudinary = new CloudinaryService(
+      c.env.CLOUDINARY_CLOUD_NAME,
+      c.env.CLOUDINARY_API_KEY,
+      c.env.CLOUDINARY_API_SECRET,
+    );
+    const arrayBuffer = await data.image.arrayBuffer();
+
+    imageUrl = await cloudinary.upload(arrayBuffer, "properties");
+  }
+
+  const { image: _image, ...propertyData } = data;
   const propertiesService = new PropertiesService(db);
-  const property = await propertiesService.createProperty(
-    session.user.id,
-    data,
-  );
+  const property = await propertiesService.createProperty(session.user.id, {
+    ...propertyData,
+    image: imageUrl || undefined,
+  });
 
   return c.json(
     { message: "Property created successfully", data: property },
@@ -97,14 +112,32 @@ export const updatePropertyHandler: RouteHandler<
   }
 
   const { id } = c.req.valid("param");
-  const data = c.req.valid("json");
+  const data = c.req.valid("form");
   const db = getDb(c.env);
+
+  let imageUrl: string | undefined;
+  if (data.image && data.image instanceof File) {
+    const cloudinary = new CloudinaryService(
+      c.env.CLOUDINARY_CLOUD_NAME,
+      c.env.CLOUDINARY_API_KEY,
+      c.env.CLOUDINARY_API_SECRET,
+    );
+    const arrayBuffer = await data.image.arrayBuffer();
+
+    imageUrl = await cloudinary.upload(arrayBuffer, "properties");
+  }
+
+  const { image: _image, ...propertyData } = data;
+  const updatePayload = imageUrl
+    ? { ...propertyData, image: imageUrl }
+    : propertyData;
+
   const propertiesService = new PropertiesService(db);
 
   const property = await propertiesService.updateProperty(
     id,
     session.user.id,
-    data,
+    updatePayload,
   );
 
   if (!property) {
