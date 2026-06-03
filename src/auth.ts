@@ -62,16 +62,6 @@ export function createAuth(env: Env) {
         secure: true,
         httpOnly: true,
       },
-      cookies: {
-        session_token: {
-          attributes: {
-            sameSite: "none",
-            secure: true,
-            httpOnly: true,
-            partitioned: true, // Partition only session_token for cross-site browser compliance (Brave/Chrome CHIPS)
-          },
-        },
-      },
     },
 
     session: {
