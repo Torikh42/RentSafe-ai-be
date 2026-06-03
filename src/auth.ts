@@ -39,7 +39,7 @@ export function createAuth(env: Env) {
       },
     },
 
-    baseURL: env.BETTER_AUTH_URL,
+    baseURL: env.BETTER_AUTH_URL.replace(/\/$/, ""),
     secret: env.BETTER_AUTH_SECRET,
 
     trustedOrigins: [
@@ -47,6 +47,7 @@ export function createAuth(env: Env) {
         ? env.FRONTEND_URLS
         : (env.FRONTEND_URLS as string).split(",").map((url) => url.trim())),
       env.BETTER_AUTH_URL,
+      env.BETTER_AUTH_URL.replace(/\/$/, ""),
     ],
 
     account: {
@@ -60,7 +61,16 @@ export function createAuth(env: Env) {
         sameSite: "none",
         secure: true,
         httpOnly: true,
-        partitioned: true, // Required for Brave & future browser privacy standards (CHIPS)
+      },
+      cookies: {
+        session_token: {
+          attributes: {
+            sameSite: "none",
+            secure: true,
+            httpOnly: true,
+            partitioned: true, // Partition only session_token for cross-site browser compliance (Brave/Chrome CHIPS)
+          },
+        },
       },
     },
 

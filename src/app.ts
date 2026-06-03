@@ -161,7 +161,7 @@ app.get("/test-login", (c) => {
               const res = await fetch("/api/auth/sign-in/social", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ provider: "google", callbackURL: "${c.env.BETTER_AUTH_URL}/test-login" })
+                body: JSON.stringify({ provider: "google", callbackURL: "${c.env.BETTER_AUTH_URL.replace(/\/$/, "")}/test-login" })
               });
               const data = await res.json();
               if (data.url) {
