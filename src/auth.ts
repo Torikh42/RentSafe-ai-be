@@ -59,6 +59,8 @@ export function createAuth(env: Env) {
       defaultCookieAttributes: {
         sameSite: "none",
         secure: true,
+        httpOnly: true,
+        partitioned: true, // Required for Brave & future browser privacy standards (CHIPS)
       },
     },
 
