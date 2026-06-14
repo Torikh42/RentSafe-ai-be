@@ -1,6 +1,6 @@
 import { eq, inArray } from "drizzle-orm";
 import { getDb } from "../../db";
-import { bookings, properties, contracts } from "../../db/schema";
+import { bookings, properties, contracts, users } from "../../db/schema";
 import type { Env } from "../../env";
 import { ulid } from "ulid";
 
@@ -56,19 +56,47 @@ export const getMyBookings = async (env: Env, userId: string, role: string) => {
     }
 
     const landlordBookings = await db
-      .select()
+      .select({
+        booking: bookings,
+        property: properties,
+        tenant: {
+          id: users.id,
+          name: users.name,
+          email: users.email,
+        },
+      })
       .from(bookings)
+      .innerJoin(properties, eq(bookings.propertyId, properties.id))
+      .innerJoin(users, eq(bookings.userId, users.id))
       .where(inArray(bookings.propertyId, propertyIds));
 
-    return landlordBookings;
+    return landlordBookings.map(({ booking, property, tenant }) => ({
+      ...booking,
+      property,
+      tenant,
+    }));
   }
 
   const tenantBookings = await db
-    .select()
+    .select({
+      booking: bookings,
+      property: properties,
+      tenant: {
+        id: users.id,
+        name: users.name,
+        email: users.email,
+      },
+    })
     .from(bookings)
+    .innerJoin(properties, eq(bookings.propertyId, properties.id))
+    .innerJoin(users, eq(bookings.userId, users.id))
     .where(eq(bookings.userId, userId));
 
-  return tenantBookings;
+  return tenantBookings.map(({ booking, property, tenant }) => ({
+    ...booking,
+    property,
+    tenant,
+  }));
 };
 
 export const updateBookingStatus = async (
