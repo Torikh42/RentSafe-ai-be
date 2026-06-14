@@ -39,11 +39,20 @@ export const createPropertyRoute = createRoute({
               .string()
               .default("true")
               .transform((v) => v === "true" || v === "1"),
-            image: z.custom<File>((v) => v instanceof File).optional(),
+            image: z
+              .custom<File>((v) => v instanceof File)
+              .openapi({ type: "string", format: "binary" })
+              .optional(),
             images: z
               .union([
-                z.custom<File>((v) => v instanceof File),
-                z.array(z.custom<File>((v) => v instanceof File)),
+                z
+                  .custom<File>((v) => v instanceof File)
+                  .openapi({ type: "string", format: "binary" }),
+                z.array(
+                  z
+                    .custom<File>((v) => v instanceof File)
+                    .openapi({ type: "string", format: "binary" }),
+                ),
               ])
               .optional()
               .transform((v) => (Array.isArray(v) ? v : v ? [v] : [])),
@@ -164,11 +173,20 @@ export const updatePropertyRoute = createRoute({
               .string()
               .transform((v) => v === "true" || v === "1")
               .optional(),
-            image: z.custom<File>((v) => v instanceof File).optional(),
+            image: z
+              .custom<File>((v) => v instanceof File)
+              .openapi({ type: "string", format: "binary" })
+              .optional(),
             images: z
               .union([
-                z.custom<File>((v) => v instanceof File),
-                z.array(z.custom<File>((v) => v instanceof File)),
+                z
+                  .custom<File>((v) => v instanceof File)
+                  .openapi({ type: "string", format: "binary" }),
+                z.array(
+                  z
+                    .custom<File>((v) => v instanceof File)
+                    .openapi({ type: "string", format: "binary" }),
+                ),
               ])
               .optional()
               .transform((v) => (Array.isArray(v) ? v : v ? [v] : [])),

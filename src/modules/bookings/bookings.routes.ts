@@ -48,6 +48,10 @@ export const getMyBookingsRoute = createRoute({
       description: "Unauthorized",
       content: { "application/json": { schema: errorResponseSchema } },
     },
+    500: {
+      description: "Internal Server Error",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
   },
 });
 
@@ -60,6 +64,10 @@ export const acceptBookingRoute = createRoute({
     200: {
       description: "Booking accepted",
       content: { "application/json": { schema: bookingResponseSchema } },
+    },
+    400: {
+      description: "Bad Request",
+      content: { "application/json": { schema: errorResponseSchema } },
     },
     401: {
       description: "Unauthorized",
@@ -86,6 +94,10 @@ export const rejectBookingRoute = createRoute({
       description: "Booking rejected",
       content: { "application/json": { schema: bookingResponseSchema } },
     },
+    400: {
+      description: "Bad Request",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
     401: {
       description: "Unauthorized",
       content: { "application/json": { schema: errorResponseSchema } },
@@ -110,6 +122,10 @@ export const cancelBookingRoute = createRoute({
     200: {
       description: "Booking cancelled",
       content: { "application/json": { schema: bookingResponseSchema } },
+    },
+    400: {
+      description: "Bad Request",
+      content: { "application/json": { schema: errorResponseSchema } },
     },
     401: {
       description: "Unauthorized",
