@@ -4,12 +4,11 @@ import {
   bookingsListResponseSchema,
   createBookingSchema,
 } from "./bookings.schema";
+import { errorResponseSchema } from "../../lib/common-schemas";
 
 const paramIdSchema = z.object({
   id: z.string().openapi({ param: { name: "id", in: "path" } }),
 });
-
-const errorResponseSchema = z.object({ message: z.string() });
 
 export const createBookingRoute = createRoute({
   method: "post",

@@ -4,13 +4,13 @@ export const bookingSchema = z.object({
   id: z.string().openapi({ example: "book_123" }),
   propertyId: z.string().openapi({ example: "prop_123" }),
   userId: z.string().openapi({ example: "usr_456" }),
-  startDate: z.union([z.string().datetime(), z.date()]),
-  endDate: z.union([z.string().datetime(), z.date()]),
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime(),
   status: z
     .enum(["pending", "approved", "rejected", "cancelled", "completed"])
     .openapi({ example: "pending" }),
-  createdAt: z.union([z.string().datetime(), z.date()]),
-  updatedAt: z.union([z.string().datetime(), z.date()]),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 });
 
 export const createBookingSchema = z.object({
