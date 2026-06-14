@@ -16,13 +16,32 @@ CREATE TABLE "account" (
 --> statement-breakpoint
 CREATE TABLE "bookings" (
 	"id" text PRIMARY KEY NOT NULL,
-	"property_id" text,
-	"user_id" text,
+	"property_id" text NOT NULL,
+	"user_id" text NOT NULL,
 	"start_date" timestamp NOT NULL,
 	"end_date" timestamp NOT NULL,
 	"status" text DEFAULT 'pending' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "inspection_images" (
+	"id" text PRIMARY KEY NOT NULL,
+	"inspection_id" text NOT NULL,
+	"url" text NOT NULL,
+	"ai_analysis" text
+);
+--> statement-breakpoint
+CREATE TABLE "inspections" (
+	"id" text PRIMARY KEY NOT NULL,
+	"property_id" text NOT NULL,
+	"landlord_id" text NOT NULL,
+	"type" text NOT NULL,
+	"reference_inspection_id" text,
+	"comparison_report" text,
+	"summary" text,
+	"status" text DEFAULT 'pending' NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "properties" (
@@ -31,8 +50,13 @@ CREATE TABLE "properties" (
 	"address" text NOT NULL,
 	"price" integer NOT NULL,
 	"description" text,
+	"image" text,
+	"type" text DEFAULT 'kos' NOT NULL,
+	"rooms" integer DEFAULT 1 NOT NULL,
+	"facilities" text[],
+	"images" text[],
 	"available" boolean DEFAULT true NOT NULL,
-	"landlord_id" text,
+	"landlord_id" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -74,5 +98,8 @@ CREATE TABLE "verification" (
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_users_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "bookings" ADD CONSTRAINT "bookings_property_id_properties_id_fk" FOREIGN KEY ("property_id") REFERENCES "public"."properties"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "bookings" ADD CONSTRAINT "bookings_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "inspection_images" ADD CONSTRAINT "inspection_images_inspection_id_inspections_id_fk" FOREIGN KEY ("inspection_id") REFERENCES "public"."inspections"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "inspections" ADD CONSTRAINT "inspections_property_id_properties_id_fk" FOREIGN KEY ("property_id") REFERENCES "public"."properties"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "inspections" ADD CONSTRAINT "inspections_landlord_id_users_id_fk" FOREIGN KEY ("landlord_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "properties" ADD CONSTRAINT "properties_landlord_id_users_id_fk" FOREIGN KEY ("landlord_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_users_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;

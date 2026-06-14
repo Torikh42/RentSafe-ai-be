@@ -34,23 +34,37 @@ export const createPropertyHandler: RouteHandler<
   const data = c.req.valid("form");
   const db = getDb(c.env);
 
+  const cloudinary = new CloudinaryService(
+    c.env.CLOUDINARY_CLOUD_NAME,
+    c.env.CLOUDINARY_API_KEY,
+    c.env.CLOUDINARY_API_SECRET,
+  );
+
   let imageUrl: string | undefined;
   if (data.image && data.image instanceof File) {
-    const cloudinary = new CloudinaryService(
-      c.env.CLOUDINARY_CLOUD_NAME,
-      c.env.CLOUDINARY_API_KEY,
-      c.env.CLOUDINARY_API_SECRET,
-    );
     const arrayBuffer = await data.image.arrayBuffer();
-
     imageUrl = await cloudinary.upload(arrayBuffer, "properties");
   }
 
-  const { image: _image, ...propertyData } = data;
+  let imageUrls: string[] = [];
+  if (data.images && data.images.length > 0) {
+    const uploadPromises = data.images.map(async (file) => {
+      if (file instanceof File) {
+        const arrayBuffer = await file.arrayBuffer();
+        return cloudinary.upload(arrayBuffer, "properties");
+      }
+      return null;
+    });
+    const results = await Promise.all(uploadPromises);
+    imageUrls = results.filter((url): url is string => url !== null);
+  }
+
+  const { image: _image, images: _images, ...propertyData } = data;
   const propertiesService = new PropertiesService(db);
   const property = await propertiesService.createProperty(session.user.id, {
     ...propertyData,
-    image: imageUrl || undefined,
+    image: imageUrl || (imageUrls.length > 0 ? imageUrls[0] : undefined),
+    images: imageUrls.length > 0 ? imageUrls : undefined,
   });
 
   return c.json(
@@ -115,22 +129,39 @@ export const updatePropertyHandler: RouteHandler<
   const data = c.req.valid("form");
   const db = getDb(c.env);
 
+  const cloudinary = new CloudinaryService(
+    c.env.CLOUDINARY_CLOUD_NAME,
+    c.env.CLOUDINARY_API_KEY,
+    c.env.CLOUDINARY_API_SECRET,
+  );
+
   let imageUrl: string | undefined;
   if (data.image && data.image instanceof File) {
-    const cloudinary = new CloudinaryService(
-      c.env.CLOUDINARY_CLOUD_NAME,
-      c.env.CLOUDINARY_API_KEY,
-      c.env.CLOUDINARY_API_SECRET,
-    );
     const arrayBuffer = await data.image.arrayBuffer();
-
     imageUrl = await cloudinary.upload(arrayBuffer, "properties");
   }
 
-  const { image: _image, ...propertyData } = data;
-  const updatePayload = imageUrl
-    ? { ...propertyData, image: imageUrl }
-    : propertyData;
+  let imageUrls: string[] = [];
+  if (data.images && data.images.length > 0) {
+    const uploadPromises = data.images.map(async (file) => {
+      if (file instanceof File) {
+        const arrayBuffer = await file.arrayBuffer();
+        return cloudinary.upload(arrayBuffer, "properties");
+      }
+      return null;
+    });
+    const results = await Promise.all(uploadPromises);
+    imageUrls = results.filter((url): url is string => url !== null);
+  }
+
+  const { image: _image, images: _images, ...propertyData } = data;
+  const updatePayload = {
+    ...propertyData,
+    ...(imageUrl || imageUrls.length > 0
+      ? { image: imageUrl || imageUrls[0] }
+      : {}),
+    ...(imageUrls.length > 0 ? { images: imageUrls } : {}),
+  };
 
   const propertiesService = new PropertiesService(db);
 

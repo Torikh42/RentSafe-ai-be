@@ -25,6 +25,10 @@ export class PropertiesService {
         price: data.price,
         description: data.description,
         image: data.image,
+        type: data.type,
+        rooms: data.rooms,
+        facilities: data.facilities || [],
+        images: data.images || [],
         available: data.available,
       })
       .returning();

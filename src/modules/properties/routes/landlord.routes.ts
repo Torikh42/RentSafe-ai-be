@@ -19,11 +19,34 @@ export const createPropertyRoute = createRoute({
             address: z.string().min(1),
             price: z.coerce.number().int().positive(),
             description: z.string().optional(),
+            type: z.enum(["kos", "apartemen"]).optional().default("kos"),
+            rooms: z.coerce.number().int().positive().optional().default(1),
+            facilities: z
+              .union([z.string(), z.array(z.string())])
+              .optional()
+              .transform((v) => {
+                if (typeof v === "string") {
+                  try {
+                    const parsed = JSON.parse(v);
+                    return Array.isArray(parsed) ? parsed : [v];
+                  } catch {
+                    return [v];
+                  }
+                }
+                return v;
+              }),
             available: z
               .string()
               .default("true")
               .transform((v) => v === "true" || v === "1"),
             image: z.custom<File>((v) => v instanceof File).optional(),
+            images: z
+              .union([
+                z.custom<File>((v) => v instanceof File),
+                z.array(z.custom<File>((v) => v instanceof File)),
+              ])
+              .optional()
+              .transform((v) => (Array.isArray(v) ? v : v ? [v] : [])),
           }),
         },
       },
@@ -121,11 +144,34 @@ export const updatePropertyRoute = createRoute({
             address: z.string().min(1).optional(),
             price: z.coerce.number().int().positive().optional(),
             description: z.string().optional(),
+            type: z.enum(["kos", "apartemen"]).optional(),
+            rooms: z.coerce.number().int().positive().optional(),
+            facilities: z
+              .union([z.string(), z.array(z.string())])
+              .optional()
+              .transform((v) => {
+                if (typeof v === "string") {
+                  try {
+                    const parsed = JSON.parse(v);
+                    return Array.isArray(parsed) ? parsed : [v];
+                  } catch {
+                    return [v];
+                  }
+                }
+                return v;
+              }),
             available: z
               .string()
               .transform((v) => v === "true" || v === "1")
               .optional(),
             image: z.custom<File>((v) => v instanceof File).optional(),
+            images: z
+              .union([
+                z.custom<File>((v) => v instanceof File),
+                z.array(z.custom<File>((v) => v instanceof File)),
+              ])
+              .optional()
+              .transform((v) => (Array.isArray(v) ? v : v ? [v] : [])),
           }),
         },
       },
