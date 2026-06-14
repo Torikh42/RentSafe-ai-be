@@ -8,6 +8,7 @@ import { authRouter } from "./modules/auth";
 import { usersRouter } from "./modules/users";
 import propertiesRouter from "./modules/properties";
 import inspectionsRouter from "./modules/inspections";
+import bookingsRouter from "./modules/bookings";
 import z from "zod";
 
 const app = createRouter();
@@ -121,6 +122,9 @@ app.route("/api/users", usersRouter);
 
 // Properties
 app.route("/api/properties", propertiesRouter);
+
+// Bookings
+app.route("/api/bookings", bookingsRouter);
 
 // Inspections
 app.route("/api/inspections", inspectionsRouter);
