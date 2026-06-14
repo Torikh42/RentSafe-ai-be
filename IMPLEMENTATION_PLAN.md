@@ -17,7 +17,7 @@
 | 5   | **Escrow System** (Midtrans Integration)                      | ❌ Belum ada    | P1       |
 | 6   | **AI Property Inspection** (Gemini Vision API)                | ❌ Belum ada    | P0       |
 | 7   | **Dispute Resolution** (AI Arbitration)                       | ❌ Belum ada    | P1       |
-| 8   | **File Storage** (R2 for photos, contracts)                   | ❌ Belum ada    | P0       |
+| 8   | **File Storage** (Cloudinary for photos)                      | ✅ Selesai      | P0       |
 | 9   | **User Dashboard & Analytics**                                | ❌ Belum ada    | P2       |
 | 10  | **Notifications & Reminders**                                 | ❌ Belum ada    | P2       |
 | 11  | **Reputation System** (Two-way rating)                        | ❌ Belum ada    | P2       |
@@ -28,7 +28,7 @@
 
 ### **PHASE 1: Foundation & Core (Week 1-2)**
 
-**Goal:** Authentication, User Management, Property CRUD, File Storage
+**Goal:** Authentication, User Management, Property CRUD, Cloudinary Storage
 
 #### **1.1 Authentication & Authorization** ✅ Setup Dasar
 
@@ -84,26 +84,22 @@ properties: (id,
 
 ---
 
-#### **1.3 File Storage — R2 Bucket** 📦
+#### **1.3 File Storage — Cloudinary** 📦
 
 **Files:**
 
-- `src/services/r2.service.ts` (baru)
-- `src/modules/uploads/` (baru)
+- `src/services/cloudinary.service.ts` (sudah ada)
+- `src/modules/uploads/` (tidak wajib jika upload di-handle langsung di resource handler)
 
 **Tasks:**
 
-- [ ] Setup R2 binding di `wrangler.toml`
-- [ ] Create `r2.service.ts` — upload, delete, get signed URL
-- [ ] Endpoint: `POST /api/uploads/presign` — get presigned URL untuk upload
-- [ ] Endpoint: `POST /api/uploads/multipart` — multipart upload (untuk foto besar)
-- [ ] Endpoint: `DELETE /api/uploads/:key` — delete file (owner only)
-- [ ] Endpoint: `GET /api/uploads/:key/url` — get public URL
-- [ ] Setup folder structure: `/{userId}/{propertyId}/{timestamp}-{filename}`
+- [x] Setup Cloudinary config & service
+- [x] Implement image upload logic for properties
+- [ ] Endpoint khusus: `POST /api/uploads` (Opsional, jika ingin general upload)
 - [ ] Validasi file type (hanya images: jpg, png, webp)
-- [ ] Validasi file size (max 10MB per file)
+- [ ] Validasi file size (max 5MB per file)
 
-**Dependencies:** Cloudflare R2 bucket creation di dashboard
+**Dependencies:** Cloudinary Account
 
 ---
 
@@ -211,7 +207,7 @@ inspection_items: {
 
 - [ ] Setup inspection schema
 - [ ] Endpoint: `POST /api/inspections` — create inspection (auto saat contract signed)
-- [ ] Endpoint: `POST /api/inspections/:id/photos` — upload photo (ke R2)
+- [ ] Endpoint: `POST /api/inspections/:id/photos` — upload photo (ke Cloudinary)
 - [ ] Endpoint: `GET /api/inspections/:id` — get inspection status & results
 - [ ] Endpoint: `POST /api/inspections/:id/analyze` — trigger AI analysis
 - [ ] Implement `analyzePhoto()` — Gemini Vision API call
@@ -226,7 +222,7 @@ inspection_items: {
   - Distinguish normal wear vs actual damage
   - Calculate deduction recommendations
 
-**Dependencies:** R2 storage (1.3), Contract (2.1), AI service (2.2)
+**Dependencies:** Cloudinary storage (1.3), Contract (2.1), AI service (2.2)
 
 ---
 
@@ -641,9 +637,8 @@ notifications
 |                   | GET      | `/api/inspections/:id`                  | Parties       | ❌     |
 |                   | POST     | `/api/inspections/:id/analyze`          | System        | ❌     |
 |                   | POST     | `/api/inspections/:id/compare`          | System        | ❌     |
-| **Uploads**       | POST     | `/api/uploads/presign`                  | Authenticated | ❌     |
-|                   | DELETE   | `/api/uploads/:key`                     | Owner         | ❌     |
-|                   | GET      | `/api/uploads/:key/url`                 | Authenticated | ❌     |
+| **Uploads**       | POST     | `/api/uploads`                          | Authenticated | ❌     |
+|                   | DELETE   | `/api/uploads/:id`                      | Owner         | ❌     |
 | **Escrows**       | POST     | `/api/escrows`                          | System        | ❌     |
 |                   | GET      | `/api/escrows/:id`                      | Parties       | ❌     |
 |                   | POST     | `/api/escrows/:id/pay`                  | Tenant        | ❌     |
@@ -675,7 +670,7 @@ notifications
 | Service          | File                                   | Purpose                   |
 | ---------------- | -------------------------------------- | ------------------------- |
 | **AI Service**   | `src/services/ai.service.ts`           | Gemini/OpenRouter wrapper |
-| **R2 Storage**   | `src/services/r2.service.ts`           | File upload, delete, URL  |
+| **Cloudinary**   | `src/services/cloudinary.service.ts`   | Image upload and CDN      |
 | **Midtrans**     | `src/services/midtrans.service.ts`     | Payment & Escrow          |
 | **Notification** | `src/services/notification.service.ts` | Email, push, SMS          |
 | **Reputation**   | `src/services/reputation.service.ts`   | Calculate user scores     |
@@ -703,12 +698,10 @@ GEMINI_API_KEY=...
 # ATAU
 OPENROUTER_API_KEY=...
 
-# Storage (R2)
-R2_ACCOUNT_ID=...
-R2_ACCESS_KEY_ID=...
-R2_SECRET_ACCESS_KEY=...
-R2_PUBLIC_URL=...
-R2_BUCKET_NAME=...
+# Storage (Cloudinary)
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
 
 # Payment (Midtrans)
 MIDTRANS_SERVER_KEY=...
@@ -728,7 +721,7 @@ NODE_ENV=production
 
 | Phase                               | Duration   | Deliverables                       |
 | ----------------------------------- | ---------- | ---------------------------------- |
-| **Phase 1: Foundation**             | Week 1-2   | Auth, Properties, R2 Storage       |
+| **Phase 1: Foundation**             | Week 1-2   | Auth, Properties, Cloudinary       |
 | **Phase 2: Rental Lifecycle**       | Week 3-4   | Contracts, Bookings, AI Inspection |
 | **Phase 3: Escrow & Payments**      | Week 5-6   | Midtrans, Escrow, Subscriptions    |
 | **Phase 4: Dispute Resolution**     | Week 7-8   | AI Arbitration, Evidence System    |
@@ -749,9 +742,9 @@ NODE_ENV=production
 
 ## ✅ Next Steps (Mulai Sekarang)
 
-1. **[P0] Setup R2 Bucket** di Cloudflare Dashboard → dapat credentials
-2. **[P0] Setup AI API Key** — Gemini Google AI Studio atau OpenRouter
-3. **[P0] Setup Midtrans Sandbox** — dapat API keys (bisa nanti Phase 3)
-4. **[P0] Start Phase 1** — Property CRUD + R2 upload
+1. **[P0] Sempurnakan Properties Schema** — Update DB Schema Drizzle (rooms, type, facilities, images array)
+2. **[P0] Update Properties API Handler** — Implement handling for the new fields and arrays
+3. **[P0] Setup AI API Key** — Gemini Google AI Studio
+4. **[P0] Start Phase 2.1 & 2.2** — Booking Module + Contracts + AI Integration
 
-**Mau saya mulai implement Phase 1 sekarang?**
+**Mau saya mulai implement Penyempurnaan Properties sekarang?**

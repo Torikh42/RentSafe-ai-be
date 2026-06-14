@@ -26,7 +26,13 @@ export const properties = pgTable("properties", {
   address: text("address").notNull(),
   price: integer("price").notNull(),
   description: text("description"),
-  image: text("image"),
+  image: text("image"), // keep for backward compatibility
+  type: text("type", { enum: ["kos", "apartemen"] })
+    .default("kos")
+    .notNull(),
+  rooms: integer("rooms").default(1).notNull(),
+  facilities: text("facilities").array(),
+  images: text("images").array(),
 
   available: boolean("available").default(true).notNull(),
   landlordId: text("landlord_id")

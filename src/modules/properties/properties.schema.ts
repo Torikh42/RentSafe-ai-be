@@ -16,6 +16,18 @@ export const propertySchema = z.object({
     .nullable()
     .optional()
     .openapi({ example: "https://example.com/image.jpg" }),
+  type: z.enum(["kos", "apartemen"]).default("kos").openapi({ example: "kos" }),
+  rooms: z.number().int().positive().default(1).openapi({ example: 1 }),
+  facilities: z
+    .array(z.string())
+    .nullable()
+    .optional()
+    .openapi({ example: ["WiFi", "AC"] }),
+  images: z
+    .array(z.string())
+    .nullable()
+    .optional()
+    .openapi({ example: ["https://example.com/image1.jpg"] }),
   available: z.boolean().default(true).openapi({ example: true }),
   landlordId: z.string().openapi({ example: "usr_456" }),
   createdAt: z.union([z.string().datetime(), z.date()]).openapi({
@@ -52,7 +64,6 @@ export const paginationSchema = z.object({
   hasPrev: z.boolean().openapi({ example: false }),
 });
 
-// Request Schemas
 export const createPropertySchema = z.object({
   name: z.string().min(1).openapi({ example: "Luxury Apartment" }),
   address: z.string().min(1).openapi({ example: "123 Main St, City" }),
@@ -64,6 +75,18 @@ export const createPropertySchema = z.object({
     .optional()
     .nullable()
     .openapi({ example: "https://example.com/image.jpg" }),
+  type: z.enum(["kos", "apartemen"]).default("kos").openapi({ example: "kos" }),
+  rooms: z.number().int().positive().default(1).openapi({ example: 1 }),
+  facilities: z
+    .array(z.string())
+    .optional()
+    .nullable()
+    .openapi({ example: ["WiFi", "AC"] }),
+  images: z
+    .array(z.string())
+    .optional()
+    .nullable()
+    .openapi({ example: ["https://example.com/image1.jpg"] }),
 });
 
 export const updatePropertySchema = createPropertySchema.partial();
