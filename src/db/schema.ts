@@ -53,7 +53,7 @@ export const bookings = pgTable("bookings", {
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
   status: text("status", {
-    enum: ["pending", "approved", "rejected", "completed"],
+    enum: ["pending", "approved", "rejected", "cancelled", "completed"],
   })
     .default("pending")
     .notNull(),
@@ -127,4 +127,37 @@ export const inspectionImages = pgTable("inspection_images", {
     .notNull(),
   url: text("url").notNull(),
   aiAnalysis: text("ai_analysis"),
+});
+
+export const contracts = pgTable("contracts", {
+  id: text("id").primaryKey(),
+  propertyId: text("property_id")
+    .references(() => properties.id)
+    .notNull(),
+  tenantId: text("tenant_id")
+    .references(() => users.id)
+    .notNull(),
+  landlordId: text("landlord_id")
+    .references(() => users.id)
+    .notNull(),
+  bookingId: text("booking_id")
+    .references(() => bookings.id)
+    .notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  depositAmount: integer("deposit_amount").notNull(),
+  monthlyRent: integer("monthly_rent").notNull(),
+  contractText: text("contract_text"),
+  fairnessScore: integer("fairness_score"),
+  status: text("status", {
+    enum: ["draft", "pending_signature", "active", "expired", "terminated"],
+  })
+    .default("draft")
+    .notNull(),
+  signedByTenant: boolean("signed_by_tenant").default(false).notNull(),
+  signedByLandlord: boolean("signed_by_landlord").default(false).notNull(),
+  signedAt: timestamp("signed_at"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
