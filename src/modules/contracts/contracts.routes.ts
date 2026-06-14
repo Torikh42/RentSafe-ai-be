@@ -47,6 +47,33 @@ export const generateContractRoute = createRoute({
   },
 });
 
+export const getMyContractsRoute = createRoute({
+  method: "get",
+  path: "/my",
+  tags: ["Contracts"],
+  responses: {
+    200: {
+      description: "List of user contracts (enriched with property & tenant)",
+      content: {
+        "application/json": {
+          schema: z.object({
+            message: z.string(),
+            data: z.array(z.record(z.string(), z.unknown())),
+          }),
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+    500: {
+      description: "Internal Server Error",
+      content: { "application/json": { schema: errorResponseSchema } },
+    },
+  },
+});
+
 export const getContractRoute = createRoute({
   method: "get",
   path: "/{id}",

@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { getDb } from "../../db";
 import { contracts, bookings, properties, users } from "../../db/schema";
 import type { Env } from "../../env";
@@ -105,6 +105,63 @@ export class ContractsService {
         .returning();
       return inserted;
     }
+  }
+
+  async getMyContracts(userId: string, role: string) {
+    if (role === "landlord") {
+      const myProperties = await this.db
+        .select({ id: properties.id })
+        .from(properties)
+        .where(eq(properties.landlordId, userId));
+
+      const propertyIds = myProperties.map((p) => p.id);
+
+      if (propertyIds.length === 0) {
+        return [];
+      }
+
+      const landlordContracts = await this.db
+        .select({
+          contract: contracts,
+          property: properties,
+          tenant: {
+            id: users.id,
+            name: users.name,
+            email: users.email,
+          },
+        })
+        .from(contracts)
+        .innerJoin(properties, eq(contracts.propertyId, properties.id))
+        .innerJoin(users, eq(contracts.tenantId, users.id))
+        .where(inArray(contracts.propertyId, propertyIds));
+
+      return landlordContracts.map(({ contract, property, tenant }) => ({
+        ...contract,
+        property,
+        tenant,
+      }));
+    }
+
+    const tenantContracts = await this.db
+      .select({
+        contract: contracts,
+        property: properties,
+        landlord: {
+          id: users.id,
+          name: users.name,
+          email: users.email,
+        },
+      })
+      .from(contracts)
+      .innerJoin(properties, eq(contracts.propertyId, properties.id))
+      .innerJoin(users, eq(contracts.landlordId, users.id))
+      .where(eq(contracts.tenantId, userId));
+
+    return tenantContracts.map(({ contract, property, landlord }) => ({
+      ...contract,
+      property,
+      landlord,
+    }));
   }
 
   async getContractById(id: string) {

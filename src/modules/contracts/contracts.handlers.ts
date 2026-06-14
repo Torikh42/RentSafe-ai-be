@@ -8,46 +8,44 @@ import {
   getContractRoute,
   signContractRoute,
   getFairnessRoute,
+  getMyContractsRoute,
 } from "./contracts.routes";
 
-const formatContractDates = <
-  T extends {
-    startDate: string | Date;
-    endDate: string | Date;
-    signedAt?: string | Date | null;
-    expiresAt?: string | Date | null;
-    createdAt: string | Date;
-    updatedAt: string | Date;
-  },
->(
-  contract: T,
-) => ({
-  ...contract,
-  startDate:
-    contract.startDate instanceof Date
-      ? contract.startDate.toISOString()
-      : (contract.startDate as string),
-  endDate:
-    contract.endDate instanceof Date
-      ? contract.endDate.toISOString()
-      : (contract.endDate as string),
-  signedAt:
-    contract.signedAt instanceof Date
-      ? contract.signedAt.toISOString()
-      : (contract.signedAt as string | null | undefined),
-  expiresAt:
-    contract.expiresAt instanceof Date
-      ? contract.expiresAt.toISOString()
-      : (contract.expiresAt as string | null | undefined),
-  createdAt:
-    contract.createdAt instanceof Date
-      ? contract.createdAt.toISOString()
-      : (contract.createdAt as string),
-  updatedAt:
-    contract.updatedAt instanceof Date
-      ? contract.updatedAt.toISOString()
-      : (contract.updatedAt as string),
-});
+import type { contractSchema } from "./contracts.schema";
+
+type ContractData = Omit<
+  ReturnType<(typeof contractSchema)["parse"]>,
+  "startDate" | "endDate" | "signedAt" | "expiresAt" | "createdAt" | "updatedAt"
+> & {
+  startDate: string;
+  endDate: string;
+  signedAt?: string | null;
+  expiresAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+const toISO = (val: unknown): string =>
+  val instanceof Date ? val.toISOString() : String(val ?? "");
+
+const formatContractDates = (contract: {
+  startDate: string | Date;
+  endDate: string | Date;
+  signedAt?: string | Date | null;
+  expiresAt?: string | Date | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  [key: string]: unknown;
+}): ContractData =>
+  ({
+    ...contract,
+    startDate: toISO(contract.startDate),
+    endDate: toISO(contract.endDate),
+    signedAt: contract.signedAt != null ? toISO(contract.signedAt) : null,
+    expiresAt: contract.expiresAt != null ? toISO(contract.expiresAt) : null,
+    createdAt: toISO(contract.createdAt),
+    updatedAt: toISO(contract.updatedAt),
+  }) as unknown as ContractData;
 
 export const generateContractHandler: RouteHandler<
   typeof generateContractRoute,
@@ -82,6 +80,41 @@ export const generateContractHandler: RouteHandler<
       return c.json({ message: msg }, 404);
     }
     return c.json({ message: msg }, 400);
+  }
+};
+
+export const getMyContractsHandler: RouteHandler<
+  typeof getMyContractsRoute,
+  AppEnv
+> = async (c) => {
+  const auth = getAuth(c.env);
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+
+  if (!session?.user) {
+    return c.json({ message: "Unauthorized" }, 401);
+  }
+
+  // @ts-ignore
+  const role = (session.user.role as string) || "tenant";
+
+  try {
+    const db = getDb(c.env);
+    const contractsService = new ContractsService(db);
+    const contracts = await contractsService.getMyContracts(
+      session.user.id,
+      role,
+    );
+
+    return c.json(
+      {
+        message: "List of user contracts",
+        data: contracts.map(formatContractDates),
+      },
+      200,
+    );
+  } catch (error) {
+    console.error("Get my contracts error:", error);
+    return c.json({ message: "Internal Server Error" }, 500);
   }
 };
 

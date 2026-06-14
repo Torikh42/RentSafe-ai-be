@@ -21,15 +21,19 @@ export const contractSchema = z.object({
   expiresAt: z.string().datetime().nullable().optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+  property: z.record(z.string(), z.unknown()).optional(),
+  tenant: z.record(z.string(), z.unknown()).optional(),
+  landlord: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const generateContractBodySchema = z.object({
   bookingId: z.string().min(1),
 });
 
+// Use flexible record for response to support enriched data (nested property/tenant)
 export const contractResponseSchema = z.object({
   message: z.string(),
-  data: contractSchema,
+  data: z.record(z.string(), z.unknown()),
 });
 
 export const fairnessResponseSchema = z.object({
