@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, and, lte, gte } from "drizzle-orm";
 import { getDb } from "../../db";
 import { bookings, properties, contracts, users } from "../../db/schema";
 import type { Env } from "../../env";
@@ -24,6 +24,47 @@ export const createBooking = async (
     throw new Error("Property not found");
   }
 
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  // 1. Check if the tenant already has an overlapping active or pending booking
+  const tenantOverlap = await db
+    .select()
+    .from(bookings)
+    .where(
+      and(
+        eq(bookings.userId, userId),
+        inArray(bookings.status, ["pending", "approved"]),
+        lte(bookings.startDate, end),
+        gte(bookings.endDate, start),
+      ),
+    );
+
+  if (tenantOverlap.length > 0) {
+    throw new Error(
+      "Anda sudah memiliki pengajuan sewa aktif (pending/approved) yang bertabrakan dengan jadwal periode sewa ini.",
+    );
+  }
+
+  // 2. Check if the property already has an approved booking in that timeframe
+  const propertyOverlap = await db
+    .select()
+    .from(bookings)
+    .where(
+      and(
+        eq(bookings.propertyId, propertyId),
+        eq(bookings.status, "approved"),
+        lte(bookings.startDate, end),
+        gte(bookings.endDate, start),
+      ),
+    );
+
+  if (propertyOverlap.length > 0) {
+    throw new Error(
+      "Properti ini sudah disewa oleh orang lain pada rentang tanggal tersebut.",
+    );
+  }
+
   const id = `book_${ulid()}`;
   const [newBooking] = await db
     .insert(bookings)
@@ -31,8 +72,8 @@ export const createBooking = async (
       id,
       propertyId,
       userId,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate: start,
+      endDate: end,
       status: "pending",
     })
     .returning();

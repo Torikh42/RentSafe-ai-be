@@ -10,6 +10,7 @@ import propertiesRouter from "./modules/properties";
 import inspectionsRouter from "./modules/inspections";
 import bookingsRouter from "./modules/bookings";
 import contractsRouter from "./modules/contracts";
+import statisticsRouter from "./modules/statistics";
 import z from "zod";
 
 const app = createRouter();
@@ -129,6 +130,9 @@ app.route("/api/bookings", bookingsRouter);
 
 // Contracts
 app.route("/api/contracts", contractsRouter);
+
+// Statistics
+app.route("/api/statistics", statisticsRouter);
 
 // Inspections
 app.route("/api/inspections", inspectionsRouter);
