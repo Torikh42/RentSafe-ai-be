@@ -7,7 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 [[hyperdrive]]
 binding = "HYPERDRIVE"
 id = "84d544be300d480689904aeafba505f5"
-localConnectionString = "postgresql://rentsafe_user:rentsafe_password@localhost:5444/rentsafe_db"
+localConnectionString = "postgresql://neondb_owner:npg_aXnwETAxb97t@ep-autumn-firefly-a1820olb-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 
 
 # ============================================================
