@@ -1,4 +1,4 @@
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, lt } from "drizzle-orm";
 import type { getDb } from "../../db";
 import { properties, users } from "../../db/schema";
 import type { z } from "zod";
@@ -43,31 +43,45 @@ export class PropertiesService {
       .where(eq(properties.landlordId, landlordId));
   }
 
-  async getProperties(page: number = 1, limit: number = 12) {
-    const offset = (page - 1) * limit;
+  async getProperties(cursor?: string, limit: number = 12) {
+    let query = this.db
+      .select()
+      .from(properties)
+      .orderBy(desc(properties.createdAt))
+      .limit(limit + 1)
+      .$dynamic();
 
-    const [result, [countResult]] = await Promise.all([
-      this.db
-        .select()
-        .from(properties)
-        .orderBy(desc(properties.createdAt))
-        .limit(limit)
-        .offset(offset),
-      this.db.select({ count: sql<number>`count(*)` }).from(properties),
-    ]);
+    if (cursor) {
+      try {
+        const decodedDate = new Date(
+          Buffer.from(cursor, "base64").toString("utf-8"),
+        );
+        query = query.where(lt(properties.createdAt, decodedDate));
+      } catch {
+        // Invalid cursor, ignore
+      }
+    }
 
-    const total = countResult?.count || 0;
-    const totalPages = Math.ceil(total / limit);
+    const result = await query;
+    const hasNext = result.length > limit;
+
+    if (hasNext) {
+      result.pop();
+    }
+
+    const nextCursor =
+      result.length > 0
+        ? Buffer.from(
+            result[result.length - 1].createdAt.toISOString(),
+          ).toString("base64")
+        : undefined;
 
     return {
       data: result,
       pagination: {
-        page,
         limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
+        hasNext,
+        nextCursor,
       },
     };
   }
@@ -101,82 +115,70 @@ export class PropertiesService {
       maxPrice?: number;
       available?: boolean;
     },
-    page: number = 1,
+    cursor?: string,
     limit: number = 12,
   ) {
-    const offset = (page - 1) * limit;
     let baseQuery = this.db.select().from(properties).$dynamic();
+    const whereClauses = [];
 
-    // Search by name or address
+    // Search by FTS
     if (query) {
-      baseQuery = baseQuery.where(
-        sql`${properties.name} ILIKE ${"%" + query + "%"} OR ${properties.address} ILIKE ${"%" + query + "%"}`,
+      whereClauses.push(
+        sql`to_tsvector('simple', ${properties.name} || ' ' || ${properties.address}) @@ websearch_to_tsquery('simple', ${query})`,
       );
     }
 
     // Filter by availability
     if (filters?.available !== undefined) {
-      baseQuery = baseQuery.where(eq(properties.available, filters.available));
+      whereClauses.push(eq(properties.available, filters.available));
     }
 
     // Filter by price range
     if (filters?.minPrice !== undefined) {
-      baseQuery = baseQuery.where(
-        sql`${properties.price} >= ${filters.minPrice}`,
-      );
+      whereClauses.push(sql`${properties.price} >= ${filters.minPrice}`);
     }
     if (filters?.maxPrice !== undefined) {
-      baseQuery = baseQuery.where(
-        sql`${properties.price} <= ${filters.maxPrice}`,
-      );
+      whereClauses.push(sql`${properties.price} <= ${filters.maxPrice}`);
     }
 
-    // Get count for pagination
-    let countQuery = this.db
-      .select({ count: sql<number>`count(*)` })
-      .from(properties)
-      .$dynamic();
-
-    if (query) {
-      countQuery = countQuery.where(
-        sql`${properties.name} ILIKE ${"%" + query + "%"} OR ${properties.address} ILIKE ${"%" + query + "%"}`,
-      );
+    // Cursor pagination
+    if (cursor) {
+      try {
+        const decodedDate = new Date(
+          Buffer.from(cursor, "base64").toString("utf-8"),
+        );
+        whereClauses.push(lt(properties.createdAt, decodedDate));
+      } catch {
+        // Invalid cursor
+      }
     }
 
-    if (filters?.available !== undefined) {
-      countQuery = countQuery.where(
-        eq(properties.available, filters.available),
-      );
+    if (whereClauses.length > 0) {
+      baseQuery = baseQuery.where(and(...whereClauses));
     }
 
-    if (filters?.minPrice !== undefined) {
-      countQuery = countQuery.where(
-        sql`${properties.price} >= ${filters.minPrice}`,
-      );
-    }
-    if (filters?.maxPrice !== undefined) {
-      countQuery = countQuery.where(
-        sql`${properties.price} <= ${filters.maxPrice}`,
-      );
+    const result = await baseQuery
+      .orderBy(desc(properties.createdAt))
+      .limit(limit + 1);
+
+    const hasNext = result.length > limit;
+    if (hasNext) {
+      result.pop();
     }
 
-    const [result, [countResult]] = await Promise.all([
-      baseQuery.orderBy(desc(properties.createdAt)).limit(limit).offset(offset),
-      countQuery,
-    ]);
-
-    const total = countResult?.count || 0;
-    const totalPages = Math.ceil(total / limit);
+    const nextCursor =
+      result.length > 0
+        ? Buffer.from(
+            result[result.length - 1].createdAt.toISOString(),
+          ).toString("base64")
+        : undefined;
 
     return {
       data: result,
       pagination: {
-        page,
         limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
+        hasNext,
+        nextCursor,
       },
     };
   }

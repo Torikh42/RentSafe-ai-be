@@ -56,12 +56,12 @@ export const propertyDetailSchema = propertySchema.extend({
 
 // Pagination schema
 export const paginationSchema = z.object({
-  page: z.number().int().positive().openapi({ example: 1 }),
   limit: z.number().int().positive().openapi({ example: 12 }),
-  total: z.number().int().openapi({ example: 50 }),
-  totalPages: z.number().int().openapi({ example: 5 }),
   hasNext: z.boolean().openapi({ example: true }),
-  hasPrev: z.boolean().openapi({ example: false }),
+  nextCursor: z.string().optional().openapi({
+    example:
+      "eyJjcmVhdGVkQXQiOiIyMDI0LTAxLTAxVDAwOjAwOjAwWiIsImlkIjoicHJvcF8xMjMifQ==",
+  }),
 });
 
 export const createPropertySchema = z.object({
@@ -93,7 +93,7 @@ export const updatePropertySchema = createPropertySchema.partial();
 
 // Query schemas for public endpoints
 export const listPropertiesQuerySchema = z.object({
-  page: z.coerce.number().int().positive().optional().default(1),
+  cursor: z.string().optional(),
   limit: z.coerce.number().int().positive().max(50).optional().default(12),
 });
 
@@ -105,7 +105,7 @@ export const searchPropertiesQuerySchema = z.object({
     .string()
     .transform((v) => v === "true" || v === "1")
     .optional(),
-  page: z.coerce.number().int().positive().optional().default(1),
+  cursor: z.string().optional(),
   limit: z.coerce.number().int().positive().max(50).optional().default(12),
 });
 
