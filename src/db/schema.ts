@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -47,6 +48,10 @@ export const properties = pgTable(
   (table) => {
     return {
       landlordIdIdx: index("properties_landlord_id_idx").on(table.landlordId),
+      searchIdx: index("properties_search_idx").using(
+        "gin",
+        sql`to_tsvector('simple', ${table.name} || ' ' || ${table.address})`,
+      ),
     };
   },
 );

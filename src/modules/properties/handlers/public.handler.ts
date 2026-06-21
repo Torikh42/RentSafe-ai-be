@@ -21,7 +21,7 @@ export const listPropertiesHandler: RouteHandler<
     const db = getDb(c.env);
     const propertiesService = new PropertiesService(db);
     const result = await propertiesService.getProperties(
-      query.page,
+      query.cursor,
       query.limit,
     );
 
@@ -103,7 +103,7 @@ export const searchPropertiesHandler: RouteHandler<
         maxPrice: query.maxPrice,
         available: query.available,
       },
-      query.page,
+      query.cursor,
       query.limit,
     );
 
