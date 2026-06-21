@@ -4,6 +4,7 @@ import {
   integer,
   boolean,
   timestamp,
+  index,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -20,78 +21,112 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updatedAt").notNull(),
 });
 
-export const properties = pgTable("properties", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  address: text("address").notNull(),
-  price: integer("price").notNull(),
-  description: text("description"),
-  image: text("image"), // keep for backward compatibility
-  type: text("type", { enum: ["kos", "apartemen"] })
-    .default("kos")
-    .notNull(),
-  rooms: integer("rooms").default(1).notNull(),
-  facilities: text("facilities").array(),
-  images: text("images").array(),
+export const properties = pgTable(
+  "properties",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    address: text("address").notNull(),
+    price: integer("price").notNull(),
+    description: text("description"),
+    image: text("image"), // keep for backward compatibility
+    type: text("type", { enum: ["kos", "apartemen"] })
+      .default("kos")
+      .notNull(),
+    rooms: integer("rooms").default(1).notNull(),
+    facilities: text("facilities").array(),
+    images: text("images").array(),
 
-  available: boolean("available").default(true).notNull(),
-  landlordId: text("landlord_id")
-    .references(() => users.id)
-    .notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+    available: boolean("available").default(true).notNull(),
+    landlordId: text("landlord_id")
+      .references(() => users.id)
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      landlordIdIdx: index("properties_landlord_id_idx").on(table.landlordId),
+    };
+  },
+);
 
-export const bookings = pgTable("bookings", {
-  id: text("id").primaryKey(),
-  propertyId: text("property_id")
-    .references(() => properties.id)
-    .notNull(),
-  userId: text("user_id")
-    .references(() => users.id)
-    .notNull(),
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").notNull(),
-  status: text("status", {
-    enum: ["pending", "approved", "rejected", "cancelled", "completed"],
-  })
-    .default("pending")
-    .notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export const bookings = pgTable(
+  "bookings",
+  {
+    id: text("id").primaryKey(),
+    propertyId: text("property_id")
+      .references(() => properties.id)
+      .notNull(),
+    userId: text("user_id")
+      .references(() => users.id)
+      .notNull(),
+    startDate: timestamp("start_date").notNull(),
+    endDate: timestamp("end_date").notNull(),
+    status: text("status", {
+      enum: ["pending", "approved", "rejected", "cancelled", "completed"],
+    })
+      .default("pending")
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      propertyIdIdx: index("bookings_property_id_idx").on(table.propertyId),
+      userIdIdx: index("bookings_user_id_idx").on(table.userId),
+      statusIdx: index("bookings_status_idx").on(table.status),
+    };
+  },
+);
 
 // Better Auth tables
-export const session = pgTable("session", {
-  id: text("id").primaryKey(),
-  expiresAt: timestamp("expiresAt").notNull(),
-  token: text("token").notNull().unique(),
-  createdAt: timestamp("createdAt").notNull(),
-  updatedAt: timestamp("updatedAt").notNull(),
-  ipAddress: text("ipAddress"),
-  userAgent: text("userAgent"),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-});
+export const session = pgTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: timestamp("expiresAt").notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: timestamp("createdAt").notNull(),
+    updatedAt: timestamp("updatedAt").notNull(),
+    ipAddress: text("ipAddress"),
+    userAgent: text("userAgent"),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+  },
+  (table) => {
+    return {
+      userIdIdx: index("session_user_id_idx").on(table.userId),
+    };
+  },
+);
 
-export const account = pgTable("account", {
-  id: text("id").primaryKey(),
-  accountId: text("accountId").notNull(),
-  providerId: text("providerId").notNull(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id),
-  accessToken: text("accessToken"),
-  refreshToken: text("refreshToken"),
-  idToken: text("idToken"),
-  accessTokenExpiresAt: timestamp("accessTokenExpiresAt"),
-  refreshTokenExpiresAt: timestamp("refreshTokenExpiresAt"),
-  scope: text("scope"),
-  password: text("password"),
-  createdAt: timestamp("createdAt").notNull(),
-  updatedAt: timestamp("updatedAt").notNull(),
-});
+export const account = pgTable(
+  "account",
+  {
+    id: text("id").primaryKey(),
+    accountId: text("accountId").notNull(),
+    providerId: text("providerId").notNull(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id),
+    accessToken: text("accessToken"),
+    refreshToken: text("refreshToken"),
+    idToken: text("idToken"),
+    accessTokenExpiresAt: timestamp("accessTokenExpiresAt"),
+    refreshTokenExpiresAt: timestamp("refreshTokenExpiresAt"),
+    scope: text("scope"),
+    password: text("password"),
+    createdAt: timestamp("createdAt").notNull(),
+    updatedAt: timestamp("updatedAt").notNull(),
+  },
+  (table) => {
+    return {
+      userIdIdx: index("account_user_id_idx").on(table.userId),
+    };
+  },
+);
 
 export const verification = pgTable("verification", {
   id: text("id").primaryKey(),
@@ -102,62 +137,92 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updatedAt").notNull(),
 });
 
-export const inspections = pgTable("inspections", {
-  id: text("id").primaryKey(),
-  propertyId: text("property_id")
-    .references(() => properties.id)
-    .notNull(),
-  landlordId: text("landlord_id")
-    .references(() => users.id)
-    .notNull(),
-  type: text("type", { enum: ["pre", "post"] }).notNull(),
-  referenceInspectionId: text("reference_inspection_id"),
-  comparisonReport: text("comparison_report"),
-  summary: text("summary"),
-  status: text("status", { enum: ["pending", "completed", "failed"] })
-    .default("pending")
-    .notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const inspections = pgTable(
+  "inspections",
+  {
+    id: text("id").primaryKey(),
+    propertyId: text("property_id")
+      .references(() => properties.id)
+      .notNull(),
+    landlordId: text("landlord_id")
+      .references(() => users.id)
+      .notNull(),
+    type: text("type", { enum: ["pre", "post"] }).notNull(),
+    referenceInspectionId: text("reference_inspection_id"),
+    comparisonReport: text("comparison_report"),
+    summary: text("summary"),
+    status: text("status", { enum: ["pending", "completed", "failed"] })
+      .default("pending")
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      propertyIdIdx: index("inspections_property_id_idx").on(table.propertyId),
+      landlordIdIdx: index("inspections_landlord_id_idx").on(table.landlordId),
+    };
+  },
+);
 
-export const inspectionImages = pgTable("inspection_images", {
-  id: text("id").primaryKey(),
-  inspectionId: text("inspection_id")
-    .references(() => inspections.id)
-    .notNull(),
-  url: text("url").notNull(),
-  aiAnalysis: text("ai_analysis"),
-});
+export const inspectionImages = pgTable(
+  "inspection_images",
+  {
+    id: text("id").primaryKey(),
+    inspectionId: text("inspection_id")
+      .references(() => inspections.id)
+      .notNull(),
+    url: text("url").notNull(),
+    aiAnalysis: text("ai_analysis"),
+  },
+  (table) => {
+    return {
+      inspectionIdIdx: index("inspection_images_inspection_id_idx").on(
+        table.inspectionId,
+      ),
+    };
+  },
+);
 
-export const contracts = pgTable("contracts", {
-  id: text("id").primaryKey(),
-  propertyId: text("property_id")
-    .references(() => properties.id)
-    .notNull(),
-  tenantId: text("tenant_id")
-    .references(() => users.id)
-    .notNull(),
-  landlordId: text("landlord_id")
-    .references(() => users.id)
-    .notNull(),
-  bookingId: text("booking_id")
-    .references(() => bookings.id)
-    .notNull(),
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").notNull(),
-  depositAmount: integer("deposit_amount").notNull(),
-  monthlyRent: integer("monthly_rent").notNull(),
-  contractText: text("contract_text"),
-  fairnessScore: integer("fairness_score"),
-  status: text("status", {
-    enum: ["draft", "pending_signature", "active", "expired", "terminated"],
-  })
-    .default("draft")
-    .notNull(),
-  signedByTenant: boolean("signed_by_tenant").default(false).notNull(),
-  signedByLandlord: boolean("signed_by_landlord").default(false).notNull(),
-  signedAt: timestamp("signed_at"),
-  expiresAt: timestamp("expires_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export const contracts = pgTable(
+  "contracts",
+  {
+    id: text("id").primaryKey(),
+    propertyId: text("property_id")
+      .references(() => properties.id)
+      .notNull(),
+    tenantId: text("tenant_id")
+      .references(() => users.id)
+      .notNull(),
+    landlordId: text("landlord_id")
+      .references(() => users.id)
+      .notNull(),
+    bookingId: text("booking_id")
+      .references(() => bookings.id)
+      .notNull(),
+    startDate: timestamp("start_date").notNull(),
+    endDate: timestamp("end_date").notNull(),
+    depositAmount: integer("deposit_amount").notNull(),
+    monthlyRent: integer("monthly_rent").notNull(),
+    contractText: text("contract_text"),
+    fairnessScore: integer("fairness_score"),
+    status: text("status", {
+      enum: ["draft", "pending_signature", "active", "expired", "terminated"],
+    })
+      .default("draft")
+      .notNull(),
+    signedByTenant: boolean("signed_by_tenant").default(false).notNull(),
+    signedByLandlord: boolean("signed_by_landlord").default(false).notNull(),
+    signedAt: timestamp("signed_at"),
+    expiresAt: timestamp("expires_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      propertyIdIdx: index("contracts_property_id_idx").on(table.propertyId),
+      tenantIdIdx: index("contracts_tenant_id_idx").on(table.tenantId),
+      landlordIdIdx: index("contracts_landlord_id_idx").on(table.landlordId),
+      bookingIdIdx: index("contracts_booking_id_idx").on(table.bookingId),
+    };
+  },
+);
