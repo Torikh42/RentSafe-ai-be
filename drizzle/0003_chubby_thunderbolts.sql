@@ -1,0 +1,1 @@
+CREATE INDEX "properties_search_idx" ON "properties" USING gin (to_tsvector('simple', "name" || ' ' || "address"));
