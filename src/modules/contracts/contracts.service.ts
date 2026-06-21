@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq, aliasedTable } from "drizzle-orm";
 import { getDb } from "../../db";
 import { contracts, bookings, properties, users } from "../../db/schema";
 import type { Env } from "../../env";
@@ -9,44 +9,30 @@ export class ContractsService {
   constructor(private db: ReturnType<typeof getDb>) {}
 
   async generateContract(bookingId: string, env: Env) {
-    // 1. Fetch booking
-    const bookingList = await this.db
-      .select()
+    const tenantUsers = aliasedTable(users, "tenant_users");
+    const landlordUsers = aliasedTable(users, "landlord_users");
+
+    const dataList = await this.db
+      .select({
+        booking: bookings,
+        property: properties,
+        tenant: tenantUsers,
+        landlord: landlordUsers,
+        contract: contracts,
+      })
       .from(bookings)
+      .innerJoin(properties, eq(bookings.propertyId, properties.id))
+      .innerJoin(tenantUsers, eq(bookings.userId, tenantUsers.id))
+      .innerJoin(landlordUsers, eq(properties.landlordId, landlordUsers.id))
+      .leftJoin(contracts, eq(contracts.bookingId, bookings.id))
       .where(eq(bookings.id, bookingId));
-    const booking = bookingList[0];
-    if (!booking) {
-      throw new Error("Booking not found");
+
+    const data = dataList[0];
+    if (!data) {
+      throw new Error("Booking or related entities not found");
     }
 
-    // 2. Fetch property
-    const propertyList = await this.db
-      .select()
-      .from(properties)
-      .where(eq(properties.id, booking.propertyId));
-    const property = propertyList[0];
-    if (!property) {
-      throw new Error("Property associated with booking not found");
-    }
-
-    // 3. Fetch Tenant & Landlord
-    const tenantList = await this.db
-      .select()
-      .from(users)
-      .where(eq(users.id, booking.userId));
-    const tenant = tenantList[0];
-    if (!tenant) {
-      throw new Error("Tenant not found");
-    }
-
-    const landlordList = await this.db
-      .select()
-      .from(users)
-      .where(eq(users.id, property.landlordId));
-    const landlord = landlordList[0];
-    if (!landlord) {
-      throw new Error("Landlord not found");
-    }
+    const { booking, property, tenant, landlord } = data;
 
     // 4. Instantiate AIService and generate contract text + analyze fairness
     const aiService = new AIService(env.GOOGLE_GENERATIVE_AI_API_KEY);
@@ -65,12 +51,7 @@ export class ContractsService {
     );
     const fairness = await aiService.analyzeFairness(contractText);
 
-    // 5. Look for existing contract for this booking
-    const existingList = await this.db
-      .select()
-      .from(contracts)
-      .where(eq(contracts.bookingId, bookingId));
-    const existingContract = existingList[0];
+    const existingContract = data.contract;
 
     if (existingContract) {
       const [updated] = await this.db
@@ -109,17 +90,6 @@ export class ContractsService {
 
   async getMyContracts(userId: string, role: string) {
     if (role === "landlord") {
-      const myProperties = await this.db
-        .select({ id: properties.id })
-        .from(properties)
-        .where(eq(properties.landlordId, userId));
-
-      const propertyIds = myProperties.map((p) => p.id);
-
-      if (propertyIds.length === 0) {
-        return [];
-      }
-
       const landlordContracts = await this.db
         .select({
           contract: contracts,
@@ -133,7 +103,7 @@ export class ContractsService {
         .from(contracts)
         .innerJoin(properties, eq(contracts.propertyId, properties.id))
         .innerJoin(users, eq(contracts.tenantId, users.id))
-        .where(inArray(contracts.propertyId, propertyIds));
+        .where(eq(properties.landlordId, userId));
 
       return landlordContracts.map(({ contract, property, tenant }) => ({
         ...contract,

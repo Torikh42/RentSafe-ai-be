@@ -46,16 +46,15 @@ export class PropertiesService {
   async getProperties(page: number = 1, limit: number = 12) {
     const offset = (page - 1) * limit;
 
-    const result = await this.db
-      .select()
-      .from(properties)
-      .orderBy(desc(properties.createdAt))
-      .limit(limit)
-      .offset(offset);
-
-    const [countResult] = await this.db
-      .select({ count: sql<number>`count(*)` })
-      .from(properties);
+    const [result, [countResult]] = await Promise.all([
+      this.db
+        .select()
+        .from(properties)
+        .orderBy(desc(properties.createdAt))
+        .limit(limit)
+        .offset(offset),
+      this.db.select({ count: sql<number>`count(*)` }).from(properties),
+    ]);
 
     const total = countResult?.count || 0;
     const totalPages = Math.ceil(total / limit);
@@ -74,26 +73,24 @@ export class PropertiesService {
   }
 
   async getPropertyById(id: string) {
-    const [property] = await this.db
-      .select()
+    const [result] = await this.db
+      .select({
+        property: properties,
+        landlord: {
+          id: users.id,
+          name: users.name,
+          image: users.image,
+        },
+      })
       .from(properties)
+      .leftJoin(users, eq(properties.landlordId, users.id))
       .where(eq(properties.id, id));
 
-    if (!property) return null;
-
-    // Get landlord info
-    const [landlord] = await this.db
-      .select({
-        id: users.id,
-        name: users.name,
-        image: users.image,
-      })
-      .from(users)
-      .where(eq(users.id, property.landlordId));
+    if (!result) return null;
 
     return {
-      ...property,
-      landlord: landlord || null,
+      ...result.property,
+      landlord: result.landlord || null,
     };
   }
 
@@ -134,11 +131,6 @@ export class PropertiesService {
       );
     }
 
-    const result = await baseQuery
-      .orderBy(desc(properties.createdAt))
-      .limit(limit)
-      .offset(offset);
-
     // Get count for pagination
     let countQuery = this.db
       .select({ count: sql<number>`count(*)` })
@@ -168,7 +160,11 @@ export class PropertiesService {
       );
     }
 
-    const [countResult] = await countQuery;
+    const [result, [countResult]] = await Promise.all([
+      baseQuery.orderBy(desc(properties.createdAt)).limit(limit).offset(offset),
+      countQuery,
+    ]);
+
     const total = countResult?.count || 0;
     const totalPages = Math.ceil(total / limit);
 

@@ -31,13 +31,15 @@ export const getStatisticsHandler: RouteHandler<
 
       const propertyIds = landlordProperties.map((p) => p.id);
 
-      let landlordBookings: Array<{
-        booking: typeof bookings.$inferSelect;
-        property: typeof properties.$inferSelect;
-        tenant: { id: string; name: string; email: string };
-      }> = [];
+      let landlordBookingsPromise: Promise<
+        Array<{
+          booking: typeof bookings.$inferSelect;
+          property: typeof properties.$inferSelect;
+          tenant: { id: string; name: string; email: string };
+        }>
+      > = Promise.resolve([]);
       if (propertyIds.length > 0) {
-        landlordBookings = await db
+        landlordBookingsPromise = db
           .select({
             booking: bookings,
             property: properties,
@@ -53,13 +55,15 @@ export const getStatisticsHandler: RouteHandler<
           .where(inArray(bookings.propertyId, propertyIds));
       }
 
-      let landlordContracts: Array<{
-        contract: typeof contracts.$inferSelect;
-        property: typeof properties.$inferSelect;
-        tenant: { id: string; name: string; email: string };
-      }> = [];
+      let landlordContractsPromise: Promise<
+        Array<{
+          contract: typeof contracts.$inferSelect;
+          property: typeof properties.$inferSelect;
+          tenant: { id: string; name: string; email: string };
+        }>
+      > = Promise.resolve([]);
       if (propertyIds.length > 0) {
-        landlordContracts = await db
+        landlordContractsPromise = db
           .select({
             contract: contracts,
             property: properties,
@@ -74,6 +78,11 @@ export const getStatisticsHandler: RouteHandler<
           .innerJoin(users, eq(contracts.tenantId, users.id))
           .where(inArray(contracts.propertyId, propertyIds));
       }
+
+      const [landlordBookings, landlordContracts] = await Promise.all([
+        landlordBookingsPromise,
+        landlordContractsPromise,
+      ]);
 
       const totalProps = landlordProperties.length;
       const activeLeases = landlordProperties.filter(
@@ -111,35 +120,37 @@ export const getStatisticsHandler: RouteHandler<
         200,
       );
     } else {
-      const tenantBookings = await db
-        .select({
-          booking: bookings,
-          property: properties,
-          landlord: {
-            id: users.id,
-            name: users.name,
-            email: users.email,
-          },
-        })
-        .from(bookings)
-        .innerJoin(properties, eq(bookings.propertyId, properties.id))
-        .innerJoin(users, eq(properties.landlordId, users.id))
-        .where(eq(bookings.userId, userId));
+      const [tenantBookings, tenantContracts] = await Promise.all([
+        db
+          .select({
+            booking: bookings,
+            property: properties,
+            landlord: {
+              id: users.id,
+              name: users.name,
+              email: users.email,
+            },
+          })
+          .from(bookings)
+          .innerJoin(properties, eq(bookings.propertyId, properties.id))
+          .innerJoin(users, eq(properties.landlordId, users.id))
+          .where(eq(bookings.userId, userId)),
 
-      const tenantContracts = await db
-        .select({
-          contract: contracts,
-          property: properties,
-          landlord: {
-            id: users.id,
-            name: users.name,
-            email: users.email,
-          },
-        })
-        .from(contracts)
-        .innerJoin(properties, eq(contracts.propertyId, properties.id))
-        .innerJoin(users, eq(contracts.landlordId, users.id))
-        .where(eq(contracts.tenantId, userId));
+        db
+          .select({
+            contract: contracts,
+            property: properties,
+            landlord: {
+              id: users.id,
+              name: users.name,
+              email: users.email,
+            },
+          })
+          .from(contracts)
+          .innerJoin(properties, eq(contracts.propertyId, properties.id))
+          .innerJoin(users, eq(contracts.landlordId, users.id))
+          .where(eq(contracts.tenantId, userId)),
+      ]);
 
       const activeRentals = tenantBookings.filter(
         (b) => b.booking.status === "approved",

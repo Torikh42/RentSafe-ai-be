@@ -27,37 +27,37 @@ export const createBooking = async (
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-  // 1. Check if the tenant already has an overlapping active or pending booking
-  const tenantOverlap = await db
-    .select()
-    .from(bookings)
-    .where(
-      and(
-        eq(bookings.userId, userId),
-        inArray(bookings.status, ["pending", "approved"]),
-        lte(bookings.startDate, end),
-        gte(bookings.endDate, start),
+  // Check both overlaps in parallel
+  const [tenantOverlap, propertyOverlap] = await Promise.all([
+    db
+      .select()
+      .from(bookings)
+      .where(
+        and(
+          eq(bookings.userId, userId),
+          inArray(bookings.status, ["pending", "approved"]),
+          lte(bookings.startDate, end),
+          gte(bookings.endDate, start),
+        ),
       ),
-    );
+    db
+      .select()
+      .from(bookings)
+      .where(
+        and(
+          eq(bookings.propertyId, propertyId),
+          eq(bookings.status, "approved"),
+          lte(bookings.startDate, end),
+          gte(bookings.endDate, start),
+        ),
+      ),
+  ]);
 
   if (tenantOverlap.length > 0) {
     throw new Error(
       "Anda sudah memiliki pengajuan sewa aktif (pending/approved) yang bertabrakan dengan jadwal periode sewa ini.",
     );
   }
-
-  // 2. Check if the property already has an approved booking in that timeframe
-  const propertyOverlap = await db
-    .select()
-    .from(bookings)
-    .where(
-      and(
-        eq(bookings.propertyId, propertyId),
-        eq(bookings.status, "approved"),
-        lte(bookings.startDate, end),
-        gte(bookings.endDate, start),
-      ),
-    );
 
   if (propertyOverlap.length > 0) {
     throw new Error(
@@ -85,17 +85,6 @@ export const getMyBookings = async (env: Env, userId: string, role: string) => {
   const db = getDb(env);
 
   if (role === "landlord") {
-    const myProperties = await db
-      .select({ id: properties.id })
-      .from(properties)
-      .where(eq(properties.landlordId, userId));
-
-    const propertyIds = myProperties.map((p) => p.id);
-
-    if (propertyIds.length === 0) {
-      return [];
-    }
-
     const landlordBookings = await db
       .select({
         booking: bookings,
@@ -109,7 +98,7 @@ export const getMyBookings = async (env: Env, userId: string, role: string) => {
       .from(bookings)
       .innerJoin(properties, eq(bookings.propertyId, properties.id))
       .innerJoin(users, eq(bookings.userId, users.id))
-      .where(inArray(bookings.propertyId, propertyIds));
+      .where(eq(properties.landlordId, userId));
 
     return landlordBookings.map(({ booking, property, tenant }) => ({
       ...booking,

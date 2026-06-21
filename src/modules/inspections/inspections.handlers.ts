@@ -38,23 +38,18 @@ export const analyzeInspectionHandler: RouteHandler<
   let files = Array.isArray(images) ? images : [images];
 
   try {
-    const imagesData = [];
-    for (const file of files) {
-      // Convert to ArrayBuffer
-      const arrayBuffer = await file.arrayBuffer();
+    const imagesData = await Promise.all(
+      files.map(async (file) => {
+        const arrayBuffer = await file.arrayBuffer();
 
-      // Analyze
-      const aiAnalysis = await service.analyzeImageCondition(arrayBuffer);
+        const [aiAnalysis, url] = await Promise.all([
+          service.analyzeImageCondition(arrayBuffer),
+          service.uploadToCloudinary(file, "inspections", propertyId),
+        ]);
 
-      // Upload to Cloudinary
-      const url = await service.uploadToCloudinary(
-        file,
-        "inspections",
-        propertyId,
-      );
-
-      imagesData.push({ url, aiAnalysis });
-    }
+        return { url, aiAnalysis };
+      }),
+    );
 
     // Save
     const inspection = await service.saveInspection({

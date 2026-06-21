@@ -3,7 +3,7 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { inspections, inspectionImages } from "../db/schema";
 import * as schema from "../db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { CloudinaryService } from "./cloudinary.service";
 
@@ -185,13 +185,26 @@ export class InspectionsService {
       where: eq(inspections.propertyId, propertyId),
     });
 
-    const result = [];
-    for (const insp of propertyInspections) {
-      const images = await this.db.query.inspectionImages.findMany({
-        where: eq(inspectionImages.inspectionId, insp.id),
-      });
+    if (propertyInspections.length === 0) return [];
 
-      result.push({
+    const inspectionIds = propertyInspections.map((insp) => insp.id);
+
+    const allImages = await this.db.query.inspectionImages.findMany({
+      where: inArray(inspectionImages.inspectionId, inspectionIds),
+    });
+
+    const imagesByInspection = allImages.reduce(
+      (acc, img) => {
+        if (!acc[img.inspectionId]) acc[img.inspectionId] = [];
+        acc[img.inspectionId].push(img);
+        return acc;
+      },
+      {} as Record<string, typeof allImages>,
+    );
+
+    return propertyInspections.map((insp) => {
+      const images = imagesByInspection[insp.id] || [];
+      return {
         ...insp,
         comparisonReport: insp.comparisonReport
           ? JSON.parse(insp.comparisonReport)
@@ -204,10 +217,8 @@ export class InspectionsService {
             ? (JSON.parse(img.aiAnalysis) as AiAnalysisResult)
             : null,
         })),
-      });
-    }
-
-    return result;
+      };
+    });
   }
 
   /**
