@@ -211,7 +211,14 @@ export const contracts = pgTable(
     contractText: text("contract_text"),
     fairnessScore: integer("fairness_score"),
     status: text("status", {
-      enum: ["draft", "pending_signature", "active", "expired", "terminated"],
+      enum: [
+        "draft",
+        "pending_signature",
+        "pending_payment",
+        "active",
+        "expired",
+        "terminated",
+      ],
     })
       .default("draft")
       .notNull(),
@@ -228,6 +235,63 @@ export const contracts = pgTable(
       tenantIdIdx: index("contracts_tenant_id_idx").on(table.tenantId),
       landlordIdIdx: index("contracts_landlord_id_idx").on(table.landlordId),
       bookingIdIdx: index("contracts_booking_id_idx").on(table.bookingId),
+    };
+  },
+);
+
+export const escrows = pgTable(
+  "escrows",
+  {
+    id: text("id").primaryKey(),
+    contractId: text("contract_id")
+      .references(() => contracts.id)
+      .notNull(),
+    amount: integer("amount").notNull(),
+    fee: integer("fee").default(0).notNull(),
+    status: text("status", {
+      enum: ["pending", "held", "disbursing", "released", "refunded", "failed"],
+    })
+      .default("pending")
+      .notNull(),
+    midtransOrderId: text("midtrans_order_id"),
+    paymentUrl: text("payment_url"),
+    snapToken: text("snap_token"),
+    releasedAt: timestamp("released_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      contractIdIdx: index("escrows_contract_id_idx").on(table.contractId),
+      midtransOrderIdIdx: index("escrows_midtrans_order_id_idx").on(
+        table.midtransOrderId,
+      ),
+    };
+  },
+);
+
+export const payments = pgTable(
+  "payments",
+  {
+    id: text("id").primaryKey(),
+    escrowId: text("escrow_id")
+      .references(() => escrows.id)
+      .notNull(),
+    type: text("type", {
+      enum: ["deposit", "rent", "refund", "deduction"],
+    }).notNull(),
+    amount: integer("amount").notNull(),
+    status: text("status", { enum: ["pending", "success", "failed"] })
+      .default("pending")
+      .notNull(),
+    midtransTransactionId: text("midtrans_transaction_id"),
+    paymentMethod: text("payment_method"),
+    paidAt: timestamp("paid_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      escrowIdIdx: index("payments_escrow_id_idx").on(table.escrowId),
     };
   },
 );

@@ -169,7 +169,8 @@ export class ContractsService {
       updatePayload.signedByLandlord || contract.signedByLandlord;
 
     if (isSignedByTenant && isSignedByLandlord) {
-      updatePayload.status = "active";
+      // Contract is fully signed but waits for payment to become active
+      updatePayload.status = "pending_payment";
       updatePayload.signedAt = new Date();
       updatePayload.expiresAt = contract.endDate;
     }

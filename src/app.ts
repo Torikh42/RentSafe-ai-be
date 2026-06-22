@@ -11,6 +11,7 @@ import inspectionsRouter from "./modules/inspections";
 import bookingsRouter from "./modules/bookings";
 import contractsRouter from "./modules/contracts";
 import statisticsRouter from "./modules/statistics";
+import escrowsRouter from "./modules/escrows";
 import z from "zod";
 
 const app = createRouter();
@@ -136,6 +137,14 @@ app.route("/api/statistics", statisticsRouter);
 
 // Inspections
 app.route("/api/inspections", inspectionsRouter);
+
+// Escrows
+app.route("/api/escrows", escrowsRouter);
+
+import webhooksRouter from "./modules/webhooks";
+
+// Webhooks
+app.route("/api/webhooks", webhooksRouter);
 
 app.get("/", (c) => c.text("RentSafe-ai API is running."));
 
