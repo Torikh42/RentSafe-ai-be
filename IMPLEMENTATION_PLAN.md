@@ -8,18 +8,18 @@
 
 ## 📋 Daftar Fitur (Berdasarkan Dokumen)
 
-| #   | Fitur                                                         | Status          | Priority |
-| --- | ------------------------------------------------------------- | --------------- | -------- |
-| 1   | **Authentication & Authorization** (Google OAuth, Role-based) | ✅ Selesai      | P0       |
-| 2   | **Property Management** (CRUD, AI Inspection)                 | ✅ Selesai      | P0       |
-| 3   | **Smart Contract Generation** (AI-powered)                    | ✅ Selesai      | P0       |
-| 4   | **Booking & Rental Lifecycle**                                | ✅ Selesai      | P0       |
-| 5   | **Escrow System** (Midtrans Integration)                      | ❌ Belum ada    | P1       |
-| 6   | **AI Property Inspection** (Gemini Vision API)                | ✅ Selesai      | P0       |
-| 7   | **Dispute Resolution** (AI Arbitration)                       | ❌ Belum ada    | P1       |
-| 8   | **File Storage** (Cloudinary for photos)                      | ✅ Selesai      | P0       |
-| 9   | **User Dashboard & Analytics**                                | ✅ Selesai      | P2       |
-| 11  | **Reputation System** (Two-way rating)                        | ❌ Belum ada    | P2       |
+| #   | Fitur                                                         | Status       | Priority |
+| --- | ------------------------------------------------------------- | ------------ | -------- |
+| 1   | **Authentication & Authorization** (Google OAuth, Role-based) | ✅ Selesai   | P0       |
+| 2   | **Property Management** (CRUD, AI Inspection)                 | ✅ Selesai   | P0       |
+| 3   | **Smart Contract Generation** (AI-powered)                    | ✅ Selesai   | P0       |
+| 4   | **Booking & Rental Lifecycle**                                | ✅ Selesai   | P0       |
+| 5   | **Escrow System** (Midtrans Integration)                      | ❌ Belum ada | P1       |
+| 6   | **AI Property Inspection** (Gemini Vision API)                | ✅ Selesai   | P0       |
+| 7   | **Dispute Resolution** (AI Arbitration)                       | ❌ Belum ada | P1       |
+| 8   | **File Storage** (Cloudinary for photos)                      | ✅ Selesai   | P0       |
+| 9   | **User Dashboard & Analytics**                                | ✅ Selesai   | P2       |
+| 11  | **Reputation System** (Two-way rating)                        | ❌ Belum ada | P2       |
 
 ---
 
@@ -620,12 +620,12 @@ reviews
 
 ## 🛠️ Services (Cross-Module)
 
-| Service          | File                                   | Purpose                   |
-| ---------------- | -------------------------------------- | ------------------------- |
-| **AI Service**   | `src/services/ai.service.ts`           | Gemini/OpenRouter wrapper |
-| **Cloudinary**   | `src/services/cloudinary.service.ts`   | Image upload and CDN      |
-| **Midtrans**     | `src/services/midtrans.service.ts`     | Payment & Escrow          |
-| **Reputation**   | `src/services/reputation.service.ts`   | Calculate user scores     |
+| Service        | File                                 | Purpose                   |
+| -------------- | ------------------------------------ | ------------------------- |
+| **AI Service** | `src/services/ai.service.ts`         | Gemini/OpenRouter wrapper |
+| **Cloudinary** | `src/services/cloudinary.service.ts` | Image upload and CDN      |
+| **Midtrans**   | `src/services/midtrans.service.ts`   | Payment & Escrow          |
+| **Reputation** | `src/services/reputation.service.ts` | Calculate user scores     |
 
 ---
 
@@ -671,14 +671,14 @@ NODE_ENV=production
 
 ## 📅 Timeline Summary
 
-| Phase                               | Duration   | Deliverables                       |
-| ----------------------------------- | ---------- | ---------------------------------- |
-| **Phase 1: Foundation**             | Week 1-2   | Auth, Properties, Cloudinary       |
-| **Phase 2: Rental Lifecycle**       | Week 3-4   | Contracts, Bookings, AI Inspection |
-| **Phase 3: Escrow & Payments**      | Week 5-6   | Midtrans, Escrow, Subscriptions    |
-| **Phase 4: Dispute Resolution**     | Week 7-8   | AI Arbitration, Evidence System    |
-| **Phase 5: Dashboard & Analytics**  | Week 9-10  | Dashboards, Reputation System      |
-| **Phase 6: Polish**                 | Week 11-12 | Bug Fixes, Performance             |
+| Phase                              | Duration   | Deliverables                       |
+| ---------------------------------- | ---------- | ---------------------------------- |
+| **Phase 1: Foundation**            | Week 1-2   | Auth, Properties, Cloudinary       |
+| **Phase 2: Rental Lifecycle**      | Week 3-4   | Contracts, Bookings, AI Inspection |
+| **Phase 3: Escrow & Payments**     | Week 5-6   | Midtrans, Escrow, Subscriptions    |
+| **Phase 4: Dispute Resolution**    | Week 7-8   | AI Arbitration, Evidence System    |
+| **Phase 5: Dashboard & Analytics** | Week 9-10  | Dashboards, Reputation System      |
+| **Phase 6: Polish**                | Week 11-12 | Bug Fixes, Performance             |
 
 ---
 
