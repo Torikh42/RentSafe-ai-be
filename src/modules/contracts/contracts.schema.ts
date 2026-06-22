@@ -13,7 +13,14 @@ export const contractSchema = z.object({
   contractText: z.string().nullable().optional(),
   fairnessScore: z.number().int().nullable().optional(),
   status: z
-    .enum(["draft", "pending_signature", "active", "expired", "terminated"])
+    .enum([
+      "draft",
+      "pending_signature",
+      "pending_payment",
+      "active",
+      "expired",
+      "terminated",
+    ])
     .openapi({ example: "draft" }),
   signedByTenant: z.boolean().openapi({ example: false }),
   signedByLandlord: z.boolean().openapi({ example: false }),

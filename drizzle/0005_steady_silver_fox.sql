@@ -1,0 +1,1 @@
+ALTER TABLE "escrows" ADD COLUMN "snap_token" text;

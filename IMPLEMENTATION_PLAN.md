@@ -8,19 +8,18 @@
 
 ## 📋 Daftar Fitur (Berdasarkan Dokumen)
 
-| #   | Fitur                                                         | Status          | Priority |
-| --- | ------------------------------------------------------------- | --------------- | -------- |
-| 1   | **Authentication & Authorization** (Google OAuth, Role-based) | ✅ Sebagian ada | P0       |
-| 2   | **Property Management** (CRUD, AI Inspection)                 | ✅ Sebagian ada | P0       |
-| 3   | **Smart Contract Generation** (AI-powered)                    | ❌ Belum ada    | P0       |
-| 4   | **Booking & Rental Lifecycle**                                | ✅ Sebagian ada | P0       |
-| 5   | **Escrow System** (Midtrans Integration)                      | ❌ Belum ada    | P1       |
-| 6   | **AI Property Inspection** (Gemini Vision API)                | ❌ Belum ada    | P0       |
-| 7   | **Dispute Resolution** (AI Arbitration)                       | ❌ Belum ada    | P1       |
-| 8   | **File Storage** (Cloudinary for photos)                      | ✅ Selesai      | P0       |
-| 9   | **User Dashboard & Analytics**                                | ❌ Belum ada    | P2       |
-| 10  | **Notifications & Reminders**                                 | ❌ Belum ada    | P2       |
-| 11  | **Reputation System** (Two-way rating)                        | ❌ Belum ada    | P2       |
+| #   | Fitur                                                         | Status       | Priority |
+| --- | ------------------------------------------------------------- | ------------ | -------- |
+| 1   | **Authentication & Authorization** (Google OAuth, Role-based) | ✅ Selesai   | P0       |
+| 2   | **Property Management** (CRUD, AI Inspection)                 | ✅ Selesai   | P0       |
+| 3   | **Smart Contract Generation** (AI-powered)                    | ✅ Selesai   | P0       |
+| 4   | **Booking & Rental Lifecycle**                                | ✅ Selesai   | P0       |
+| 5   | **Escrow System** (Midtrans Integration)                      | ❌ Belum ada | P1       |
+| 6   | **AI Property Inspection** (Gemini Vision API)                | ✅ Selesai   | P0       |
+| 7   | **Dispute Resolution** (AI Arbitration)                       | ❌ Belum ada | P1       |
+| 8   | **File Storage** (Cloudinary for photos)                      | ✅ Selesai   | P0       |
+| 9   | **User Dashboard & Analytics**                                | ✅ Selesai   | P2       |
+| 11  | **Reputation System** (Two-way rating)                        | ❌ Belum ada | P2       |
 
 ---
 
@@ -457,51 +456,11 @@ reviews: {
 
 ---
 
-### **PHASE 6: Notifications & Polish (Week 11-12)**
+### **PHASE 6: Performance & Polish (Week 11-12)**
 
 **Goal:** Email Notifications, Reminders, Bug Fixes, Performance
 
-#### **6.1 Notification System** 🔔
-
-**Files:**
-
-- `src/services/notification.service.ts` (baru)
-- `src/db/schema.ts` → `notifications` (baru)
-
-**Schema Additions:**
-
-```typescript
-notifications: {
-  id, userId,
-  type: 'email' | 'push' | 'sms',
-  title (text),
-  message (text),
-  read (boolean),
-  scheduledAt (timestamp),
-  sentAt (timestamp),
-  createdAt
-}
-```
-
-**Tasks:**
-
-- [ ] Setup notification schema
-- [ ] Setup Resend/SendGrid untuk email (atau Cloudflare Email Routing)
-- [ ] Implement `sendNotification()` — queue & send
-- [ ] Endpoint: `GET /api/notifications` — list user's notifications
-- [ ] Endpoint: `POST /api/notifications/:id/read` — mark as read
-- [ ] Setup automated triggers:
-  - Contract expiring reminder (30 days before)
-  - Payment due reminder
-  - Inspection pending notification
-  - Dispute update alerts
-  - Escrow released confirmation
-
-**Dependencies:** Email service provider
-
----
-
-#### **6.2 Performance & Polish** ✨
+#### **6.1 Performance & Polish** ✨
 
 **Tasks:**
 
@@ -600,10 +559,6 @@ reviews
 ├── reviewerId → users.id, revieweeId → users.id
 ├── rating (1-5), comment, createdAt
 
-notifications
-├── id, userId → users.id
-├── type, title, message, read
-├── scheduledAt, sentAt, createdAt
 ```
 
 ---
@@ -658,8 +613,6 @@ notifications
 |                   | GET      | `/api/dashboard/analytics/property/:id` | Owner         | ❌     |
 | **Reviews**       | POST     | `/api/reviews`                          | Parties       | ❌     |
 |                   | GET      | `/api/users/:id/reviews`                | Public        | ❌     |
-| **Notifications** | GET      | `/api/notifications`                    | Authenticated | ❌     |
-|                   | POST     | `/api/notifications/:id/read`           | Owner         | ❌     |
 | **Webhooks**      | POST     | `/api/webhooks/midtrans`                | System        | ❌     |
 |                   | POST     | `/api/webhooks/midtrans/subscription`   | System        | ❌     |
 
@@ -667,13 +620,12 @@ notifications
 
 ## 🛠️ Services (Cross-Module)
 
-| Service          | File                                   | Purpose                   |
-| ---------------- | -------------------------------------- | ------------------------- |
-| **AI Service**   | `src/services/ai.service.ts`           | Gemini/OpenRouter wrapper |
-| **Cloudinary**   | `src/services/cloudinary.service.ts`   | Image upload and CDN      |
-| **Midtrans**     | `src/services/midtrans.service.ts`     | Payment & Escrow          |
-| **Notification** | `src/services/notification.service.ts` | Email, push, SMS          |
-| **Reputation**   | `src/services/reputation.service.ts`   | Calculate user scores     |
+| Service        | File                                 | Purpose                   |
+| -------------- | ------------------------------------ | ------------------------- |
+| **AI Service** | `src/services/ai.service.ts`         | Gemini/OpenRouter wrapper |
+| **Cloudinary** | `src/services/cloudinary.service.ts` | Image upload and CDN      |
+| **Midtrans**   | `src/services/midtrans.service.ts`   | Payment & Escrow          |
+| **Reputation** | `src/services/reputation.service.ts` | Calculate user scores     |
 
 ---
 
@@ -719,14 +671,14 @@ NODE_ENV=production
 
 ## 📅 Timeline Summary
 
-| Phase                               | Duration   | Deliverables                       |
-| ----------------------------------- | ---------- | ---------------------------------- |
-| **Phase 1: Foundation**             | Week 1-2   | Auth, Properties, Cloudinary       |
-| **Phase 2: Rental Lifecycle**       | Week 3-4   | Contracts, Bookings, AI Inspection |
-| **Phase 3: Escrow & Payments**      | Week 5-6   | Midtrans, Escrow, Subscriptions    |
-| **Phase 4: Dispute Resolution**     | Week 7-8   | AI Arbitration, Evidence System    |
-| **Phase 5: Dashboard & Analytics**  | Week 9-10  | Dashboards, Reputation System      |
-| **Phase 6: Notifications & Polish** | Week 11-12 | Email, Reminders, Performance      |
+| Phase                              | Duration   | Deliverables                       |
+| ---------------------------------- | ---------- | ---------------------------------- |
+| **Phase 1: Foundation**            | Week 1-2   | Auth, Properties, Cloudinary       |
+| **Phase 2: Rental Lifecycle**      | Week 3-4   | Contracts, Bookings, AI Inspection |
+| **Phase 3: Escrow & Payments**     | Week 5-6   | Midtrans, Escrow, Subscriptions    |
+| **Phase 4: Dispute Resolution**    | Week 7-8   | AI Arbitration, Evidence System    |
+| **Phase 5: Dashboard & Analytics** | Week 9-10  | Dashboards, Reputation System      |
+| **Phase 6: Polish**                | Week 11-12 | Bug Fixes, Performance             |
 
 ---
 

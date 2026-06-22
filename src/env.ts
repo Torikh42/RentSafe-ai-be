@@ -53,6 +53,13 @@ export const EnvSchema = z.object({
   CLOUDINARY_API_KEY: z.string().min(1, "CLOUDINARY_API_KEY wajib diisi"),
   CLOUDINARY_API_SECRET: z.string().min(1, "CLOUDINARY_API_SECRET wajib diisi"),
   GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1, "API Key wajib diisi"),
+  // Midtrans configuration
+  MIDTRANS_SERVER_KEY: z.string().min(1, "MIDTRANS_SERVER_KEY wajib diisi"),
+  MIDTRANS_IS_PRODUCTION: z
+    .enum(["true", "false"])
+    .optional()
+    .default("false")
+    .transform((val) => val === "true"),
 });
 
 export type Env = z.infer<typeof EnvSchema> & {
