@@ -3,6 +3,7 @@ import {
   PaymentInitiationResponseSchema,
   contractIdParamSchema,
   selectEscrowSchema,
+  EscrowDetailResponseSchema,
 } from "./escrows.schema";
 
 export const initiatePaymentRoute = createRoute({
@@ -47,6 +48,34 @@ export const getMyEscrowsRoute = createRoute({
       },
     },
     401: { description: "Unauthorized" },
+    500: { description: "Internal Server Error" },
+  },
+});
+
+export const getEscrowByIdRoute = createRoute({
+  method: "get",
+  path: "/{escrowId}",
+  summary: "Get escrow detail",
+  description:
+    "Get detailed information about a specific escrow, including contract details.",
+  tags: ["Escrows"],
+  request: {
+    params: z.object({
+      escrowId: z.string(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Escrow details",
+      content: {
+        "application/json": {
+          schema: EscrowDetailResponseSchema,
+        },
+      },
+    },
+    401: { description: "Unauthorized" },
+    403: { description: "Forbidden" },
+    404: { description: "Not Found" },
     500: { description: "Internal Server Error" },
   },
 });
