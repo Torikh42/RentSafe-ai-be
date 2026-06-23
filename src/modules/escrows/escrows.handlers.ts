@@ -1,11 +1,15 @@
 import type { AppEnv } from "@/factory";
 import { getDb } from "@/db";
-import { contracts, escrows, users } from "@/db/schema";
+import { escrows, contracts, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { createSnapTransaction } from "@/services/midtrans.service";
 import { ulid } from "ulid";
 import type { RouteHandler } from "@hono/zod-openapi";
-import type { initiatePaymentRoute, getMyEscrowsRoute } from "./escrows.routes";
+import {
+  getMyEscrowsRoute,
+  initiatePaymentRoute,
+  getEscrowByIdRoute,
+} from "./escrows.routes";
 import { getAuth } from "@/auth";
 
 export const initiatePaymentHandler: RouteHandler<
@@ -176,6 +180,54 @@ export const getMyEscrowsHandler: RouteHandler<
     return c.json(serialized, 200 as const);
   } catch (err) {
     console.error("[getMyEscrowsHandler] ERROR:", err);
+    return c.json({ message: "Internal Server Error" }, 500 as const);
+  }
+};
+
+export const getEscrowByIdHandler: RouteHandler<
+  typeof getEscrowByIdRoute,
+  AppEnv
+> = async (c) => {
+  try {
+    const auth = getAuth(c.env);
+    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+    const user = session?.user;
+    const db = getDb(c.env);
+
+    if (!user) return c.json({ message: "Unauthorized" }, 401 as const);
+
+    const { escrowId } = c.req.valid("param");
+
+    const [result] = await db
+      .select({
+        escrow: escrows,
+        contract: contracts,
+      })
+      .from(escrows)
+      .leftJoin(contracts, eq(escrows.contractId, contracts.id))
+      .where(eq(escrows.id, escrowId));
+
+    if (!result || !result.escrow || !result.contract) {
+      return c.json({ message: "Not Found" }, 404 as const);
+    }
+
+    // Check if the user is authorized to view this escrow (must be tenant or landlord of the contract)
+    if (
+      result.contract.tenantId !== user.id &&
+      result.contract.landlordId !== user.id &&
+      user.role !== "admin"
+    ) {
+      return c.json({ message: "Forbidden" }, 403 as const);
+    }
+
+    const responseData = {
+      ...result.escrow,
+      contract: result.contract,
+    };
+
+    return c.json(responseData, 200 as const);
+  } catch (err) {
+    console.error("[getEscrowByIdHandler] ERROR:", err);
     return c.json({ message: "Internal Server Error" }, 500 as const);
   }
 };

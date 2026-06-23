@@ -12,6 +12,8 @@ import bookingsRouter from "./modules/bookings";
 import contractsRouter from "./modules/contracts";
 import statisticsRouter from "./modules/statistics";
 import escrowsRouter from "./modules/escrows";
+import { paymentsRouter } from "./modules/payments";
+import webhooksRouter from "./modules/webhooks";
 import z from "zod";
 
 const app = createRouter();
@@ -141,7 +143,8 @@ app.route("/api/inspections", inspectionsRouter);
 // Escrows
 app.route("/api/escrows", escrowsRouter);
 
-import webhooksRouter from "./modules/webhooks";
+// Payments
+app.route("/api/payments", paymentsRouter);
 
 // Webhooks
 app.route("/api/webhooks", webhooksRouter);

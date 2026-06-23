@@ -267,15 +267,15 @@ payments: {
 
 **Tasks:**
 
-- [ ] Setup Midtrans API integration (`midtrans.service.ts`)
+- [x] Setup Midtrans API integration (`midtrans.service.ts`)
   - Create payment request
   - Handle webhook notifications
   - Disbursement API (untuk release escrow)
-- [ ] Setup escrow schema
+- [x] Setup escrow schema
 - [ ] Endpoint: `POST /api/escrows` — create escrow (saat contract signed)
 - [ ] Endpoint: `GET /api/escrows/:id` — get escrow status
-- [ ] Endpoint: `POST /api/escrows/:id/pay` — initiate payment (get Midtrans payment URL)
-- [ ] Endpoint: `POST /api/webhooks/midtrans` — handle Midtrans payment callbacks
+- [x] Endpoint: `POST /api/escrows/:id/pay` — initiate payment (get Midtrans payment URL)
+- [x] Endpoint: `POST /api/webhooks/midtrans` — handle Midtrans payment callbacks
 - [ ] Implement `releaseEscrow()` — auto-disburse berdasarkan AI verdict
 - [ ] Implement `refundEscrow()` — refund ke tenant jika tidak ada damage
 - [ ] Implement `deductEscrow()` — deduct untuk landlord jika ada damage

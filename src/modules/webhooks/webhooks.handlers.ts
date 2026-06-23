@@ -1,7 +1,7 @@
 import type { AppEnv } from "@/factory";
 import { getDb } from "@/db";
 import { escrows, payments, contracts } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { verifySignature } from "@/services/midtrans.service";
 import { ulid } from "ulid";
 import type { RouteHandler } from "@hono/zod-openapi";
@@ -102,18 +102,48 @@ export const midtransWebhookHandler: RouteHandler<
       })
       .where(eq(escrows.id, escrow.id));
 
-    // Insert or update payment record
-    const paymentId = ulid();
-    await db.insert(payments).values({
-      id: paymentId,
-      escrowId: escrow.id,
-      type: "deposit", // Primary transaction covers deposit + first month rent
-      amount: escrow.amount,
-      status: paymentStatus,
-      midtransTransactionId: payload.transaction_id || null,
-      paymentMethod: payload.payment_type || null,
-      paidAt: paymentStatus === "success" ? new Date() : null,
-    });
+    // Upsert payment record — 1 payment per transaction_id (no duplicates)
+    // Use select() instead of db.query to avoid relational query issues
+    const transactionId = payload.transaction_id as string | undefined;
+    const [existingPayment] = transactionId
+      ? await db
+          .select()
+          .from(payments)
+          .where(eq(payments.midtransTransactionId, transactionId))
+          .limit(1)
+      : await db
+          .select()
+          .from(payments)
+          .where(eq(payments.escrowId, escrow.id))
+          .orderBy(desc(payments.createdAt))
+          .limit(1);
+
+    if (existingPayment) {
+      // Payment already exists — update status only
+      await db
+        .update(payments)
+        .set({
+          status: paymentStatus,
+          midtransTransactionId:
+            transactionId ?? existingPayment.midtransTransactionId,
+          paymentMethod: payload.payment_type ?? existingPayment.paymentMethod,
+          paidAt:
+            paymentStatus === "success" ? new Date() : existingPayment.paidAt,
+        })
+        .where(eq(payments.id, existingPayment.id));
+    } else {
+      // First time seeing this payment — insert
+      await db.insert(payments).values({
+        id: ulid(),
+        escrowId: escrow.id,
+        type: "deposit",
+        amount: escrow.amount,
+        status: paymentStatus,
+        midtransTransactionId: transactionId ?? null,
+        paymentMethod: payload.payment_type ?? null,
+        paidAt: paymentStatus === "success" ? new Date() : null,
+      });
+    }
 
     // If payment is successful, transition contract status to active
     if (paymentStatus === "success") {

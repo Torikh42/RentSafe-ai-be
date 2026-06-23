@@ -16,6 +16,19 @@ export const PaymentInitiationResponseSchema = z
   })
   .openapi("PaymentInitiationResponse");
 
+export const EscrowDetailResponseSchema = selectEscrowSchema
+  .extend({
+    contract: z.object({
+      propertyId: z.string(),
+      tenantId: z.string(),
+      landlordId: z.string(),
+      depositAmount: z.number(),
+      monthlyRent: z.number(),
+      status: z.string(),
+    }),
+  })
+  .openapi("EscrowDetailResponse");
+
 // Request parameters
 export const contractIdParamSchema = z.object({
   contractId: z.string().openapi({ description: "ID of the contract" }),
