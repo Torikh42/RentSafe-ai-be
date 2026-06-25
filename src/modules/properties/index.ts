@@ -1,5 +1,4 @@
-import { OpenAPIHono } from "@hono/zod-openapi";
-import type { AppEnv } from "../../factory";
+import { createRouter } from "../../factory";
 
 // Routes
 import {
@@ -27,7 +26,7 @@ import {
   deletePropertyHandler,
 } from "./handlers/landlord.handler";
 
-const propertiesRouter = new OpenAPIHono<AppEnv>();
+const propertiesRouter = createRouter();
 
 // ============= PUBLIC ROUTES (No Auth) =============
 propertiesRouter.openapi(listPropertiesRoute, listPropertiesHandler);

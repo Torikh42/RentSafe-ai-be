@@ -30,12 +30,12 @@ export const propertySchema = z.object({
     .openapi({ example: ["https://example.com/image1.jpg"] }),
   available: z.boolean().default(true).openapi({ example: true }),
   landlordId: z.string().openapi({ example: "usr_456" }),
-  createdAt: z.union([z.string().datetime(), z.date()]).openapi({
+  createdAt: z.string().datetime().openapi({
     type: "string",
     format: "date-time",
     example: "2024-01-01T00:00:00Z",
   }),
-  updatedAt: z.union([z.string().datetime(), z.date()]).openapi({
+  updatedAt: z.string().datetime().openapi({
     type: "string",
     format: "date-time",
     example: "2024-01-01T00:00:00Z",
