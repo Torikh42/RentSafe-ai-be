@@ -62,10 +62,10 @@ export class InspectionsService {
 
     // Order of preference for models (Waterfall fallback)
     const models = [
-      "gemini-3.1-flash-lite-preview",
-      "gemini-3-flash-preview",
-      "gemini-3.1-pro-preview",
-      "gemini-2.5-flash-lite", // Fallback for stability if preview fails
+      "gemini-3.1-flash-lite",
+      "gemini-3-flash",
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite",
     ];
 
     let lastError: unknown = null;
@@ -230,6 +230,11 @@ export class InspectionsService {
     if (postInspection.type !== "post")
       throw new Error("Inspection must be a check-out (post) type");
 
+    // Return cached comparison if it already exists
+    if (postInspection.comparisonReport) {
+      return postInspection;
+    }
+
     // Find the corresponding check-in
     const preInspection = await this.db.query.inspections.findFirst({
       where: and(
@@ -289,9 +294,9 @@ export class InspectionsService {
     `;
 
     const models = [
-      "gemini-3.1-flash-lite-preview",
-      "gemini-3-flash-preview",
-      "gemini-3.1-pro-preview",
+      "gemini-3.1-flash-lite",
+      "gemini-3-flash",
+      "gemini-2.5-flash",
       "gemini-2.5-flash-lite",
     ];
 

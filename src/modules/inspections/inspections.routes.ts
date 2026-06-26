@@ -57,7 +57,23 @@ export const analyzeInspectionRoute = createRoute({
           schema: ErrorResponseSchema,
         },
       },
-      description: "Unauthorized - must be landlord",
+      description: "Unauthorized",
+    },
+    403: {
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: "Forbidden",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: "Not Found",
     },
     500: {
       content: {
@@ -90,6 +106,22 @@ export const getPropertyInspectionsRoute = createRoute({
         },
       },
       description: "List of inspections",
+    },
+    401: {
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: "Unauthorized",
+    },
+    403: {
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: "Forbidden",
     },
     404: {
       content: {
@@ -144,6 +176,14 @@ export const compareInspectionsRoute = createRoute({
         },
       },
       description: "Unauthorized",
+    },
+    403: {
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+      description: "Forbidden",
     },
     404: {
       content: {
