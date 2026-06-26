@@ -9,7 +9,12 @@ const FairnessResultSchema = z.object({
 
 export class AIService {
   private google: ReturnType<typeof createGoogleGenerativeAI>;
-  private models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash"];
+  private models = [
+    "gemini-3.1-flash-lite",
+    "gemini-3-flash",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+  ];
 
   constructor(apiKey: string) {
     this.google = createGoogleGenerativeAI({ apiKey });
